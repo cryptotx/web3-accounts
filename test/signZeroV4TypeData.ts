@@ -1,4 +1,4 @@
-import {Asset, EIP712TypedData, getEstimateGas, Web3Accounts} from "../index"
+import { Web3Accounts} from "../index"
 // @ts-ignore
 import * as secrets from '../../../secrets.json'
 import {getEIP712Hash} from "web3-wallets";
@@ -79,14 +79,14 @@ const data = {
         ]
     },
     "domain": {
-        "chainId": 1,
+        "chainId": 43114,
         "verifyingContract": "0xdef1c0ded9bec7f1a1670819833240f027b25eff",
         "name": "ZeroEx",
         "version": "1.0.0"
     },
     "primaryType": "ERC721Order",
     "message": {
-        "direction": 0,
+        "direction": "0",
         "maker": "0x70997970C51812dc3A010C7d01b50e0d17dc79C8",
         "taker": "0x0000000000000000000000000000000000000000",
         "expiry": "86410",
@@ -101,7 +101,7 @@ const data = {
 }
 const seller = '0x9F7A946d935c8Efc7A8329C0d894A69bA241345A';
 (async () => {
-    const chainId = 97
+    const chainId = 1
     const user = new Web3Accounts({
         chainId,
         address: seller,

@@ -89,10 +89,10 @@ export class Web3Accounts extends ContractBase {
     /**
      * Generate the EC signature for a hash given a private key.
      */
-    public ecSignMessage(message: string, key?: string) {
-        const privateKey = key || this.walletInfo.priKey
-        if (!privateKey) throw "privateKey error"
-        const signMsg = ecSignMessage(message, privateKey)
+    public ecSignMessage(message: string, privateKey?: string) {
+        const priKey = privateKey || this.walletInfo.priKey
+        if (!priKey) throw Error("Private key error")
+        const signMsg = ecSignMessage(message, priKey)
         return {
             r: signMsg.r,
             s: signMsg.s,
@@ -117,8 +117,9 @@ export class Web3Accounts extends ContractBase {
     }
 
     public async signTypedData(typedData: EIP712TypedData): Promise<any> {
+
         const {walletProvider, walletSigner} = getProvider(this.walletInfo)
-        const types = typedData.types
+        const types = Object.assign({}, typedData.types)
         if (types.EIP712Domain) {
             delete types.EIP712Domain
         }
@@ -127,17 +128,17 @@ export class Web3Accounts extends ContractBase {
         //     const walletSigner = new providers.Web3Provider(walletProvider).getSigner()
         //     signature = await walletSigner._signTypedData(typedData.domain, {Order: typedData.types.Order}, typedData.message)
         // }
-        signature = await (<any>walletSigner)._signTypedData(typedData.domain, typedData.types, typedData.message).catch((error: any) => {
+        signature = await (<any>walletSigner)._signTypedData(typedData.domain, types, typedData.message).catch((error: any) => {
             this.emit('SignTypedData', error)
             throw error
         })
 
-        const pubAddress = ethers.utils.verifyTypedData(typedData.domain, typedData.types, typedData.message, signature)
+        const pubAddress = ethers.utils.verifyTypedData(typedData.domain, types, typedData.message, signature)
         const msg = `VerifyTypedData error ${pubAddress} ${this.walletInfo.address}`
         console.assert(pubAddress.toLowerCase() == this.walletInfo.address.toLowerCase(), msg)
         return {
             signature,
-            signatureVRS:splitECSignature(signature),
+            signatureVRS: splitECSignature(signature),
             typedData
         }
     }

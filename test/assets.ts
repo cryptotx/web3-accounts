@@ -4,7 +4,7 @@ export const CryptoKitties = {
     4: [{
         tokenId: '16',
         tokenAddress: '0x1530272ce6e4589f5c09151a7c9a118a58d70e09',
-        schemaName: TokenSchemaName.CryptoKitties
+        schemaName: "CryptoKitties"
     }]
 }
 
