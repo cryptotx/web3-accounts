@@ -12,6 +12,7 @@ import {
     getChainRpcUrl,
     getEstimateGas
 } from "web3-wallets";
+import {privateKeysToAddress} from "web3-wallets/lib/src/signature/eip712TypeData";
 
 export const COMMON_CONTRACTS_ADDRESSES = {
     1: {
@@ -103,7 +104,15 @@ export class ContractBase extends EventEmitter {
 
     constructor(wallet: WalletInfo) {
         super()
-        wallet.rpcUrl = wallet.rpcUrl || getChainInfo(wallet.chainId).rpcs[0]
+        wallet.rpcUrl = {
+            ...wallet.rpcUrl,
+            url: wallet.rpcUrl?.url || getChainInfo(wallet.chainId).rpcs[0]
+        }
+        const accounts = wallet?.privateKeys && privateKeysToAddress(wallet.privateKeys)
+        if (accounts) {
+            if (!accounts[wallet.address.toLowerCase()]) throw 'PriKey error'
+            // console.log('PriKey address', wallet.address.toLowerCase())
+        }
         this.walletInfo = wallet
         const {address, chainId, walletSigner} = getProvider(wallet)
 
@@ -141,7 +150,7 @@ export class ContractBase extends EventEmitter {
     }
 
     async estimateGas(callData: LimitedCallSpec) {
-        const rpcUrl = this.walletInfo.rpcUrl || await getChainRpcUrl(this.walletInfo.chainId)
+        const rpcUrl = this.walletInfo.rpcUrl?.url || await getChainRpcUrl(this.walletInfo.chainId)
         return getEstimateGas(rpcUrl, callData)
     }
 }

@@ -90,7 +90,7 @@ export class Web3Accounts extends ContractBase {
      * Generate the EC signature for a hash given a private key.
      */
     public ecSignMessage(message: string, privateKey?: string) {
-        const priKey = privateKey || this.walletInfo.priKey
+        const priKey = privateKey || this.walletInfo.privateKeys && this.walletInfo.privateKeys[0]
         if (!priKey) throw Error("Private key error")
         const signMsg = ecSignMessage(message, priKey)
         return {

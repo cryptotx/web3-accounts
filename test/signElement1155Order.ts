@@ -5,6 +5,8 @@ import {getEIP712Hash} from "web3-wallets";
 import {Web3Accounts} from "../src/index";
 // @ts-ignore
 import * as secrets from '../../../secrets.json'
+import {privateKeysToAddress} from "web3-wallets/lib/src/signature/eip712TypeData";
+import {AssetSchemaName, AcceptOrdersParams, OrderOption} from "../src/types";
 
 const typedData = {
     "domain": {
@@ -96,13 +98,31 @@ const hash1 = getEIP712Hash(typedData)
 const seller = '0x9F7A946d935c8Efc7A8329C0d894A69bA241345A';
 
 (async () => {
+    const foo: AcceptOrdersParams = {
+        orderList: [{
+            orderStr: "",
+            taker: "",
+            metadata: ""
+        }, {
+            orderStr: "",
+            taker: "",
+            metadata: ""
+        }],
+        mixedPayment: {wethValue: "1", ethValue: "1"}
+    }
+
+    console.log(foo);
     const chainId = 1
+    // console.log(privateKeysToAddress(secrets.privateKeys))
     const user = new Web3Accounts({
         chainId,
         address: seller,
-        priKey: secrets.accounts[seller]
+        privateKeys: secrets.privateKeys
     })
+
 
     const sign = await user.signTypedData(typedData)
     console.log(sign)
+
+
 })()

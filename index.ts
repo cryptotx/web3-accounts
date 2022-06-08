@@ -23,7 +23,8 @@ export type {
     CreateOrderParams,
     LowerPriceOrderParams,
     AcceptOrderOption,
-    BatchAcceptOrderOption
+    OrderOption,
+    AcceptOrdersParams
 } from './src/types'
 
 export {TokenSchemaName, ElementSchemaName, OrderType, OfferType} from './src/types'
