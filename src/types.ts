@@ -17,7 +17,7 @@ export interface APIConfig {
     protocolFeeAddress?: string
     contractAddresses?: any
 }
-  
+
 export enum ElementSchemaName {
     ERC20 = 'ERC20',
     ERC721 = 'ERC721',
@@ -159,14 +159,6 @@ export type OrderOption = Omit<MatchOrderOption, "mixedPayment"> & { orderStr: s
 export interface MatchOrdersParams extends MatchOption {
     orderList: OrderOption []
 }
-
-
-// export interface BatchAcceptOrderOption extends AcceptOption {
-//     metadatas?: string[]
-//     takerAmounts?: string[]
-//     takers?: string[]
-//     sellTokenIds?: string[]
-// }
 
 
 export interface ExchangetAgent extends EventEmitter {

@@ -10,11 +10,10 @@ import {
     LimitedCallSpec,
     NULL_ADDRESS,
     WalletInfo,
-    ETH_TOKEN_ADDRESS, splitECSignature,
-    TokenSchemaNames,
+    ETH_TOKEN_ADDRESS,
+    splitECSignature,
+    TokenSchemaNames
 } from "web3-wallets";
-import {ECSignature} from "web3-wallets/lib/src/signature/eip712TypeData";
-
 
 export const ETHToken: Token = {
     name: 'etherem',
@@ -80,7 +79,6 @@ export function transactionToCallData(data: PopulatedTransaction): LimitedCallSp
         value: data.value
     } as LimitedCallSpec
 }
-
 
 export class Web3Accounts extends ContractBase {
     constructor(wallet: WalletInfo) {
@@ -194,6 +192,20 @@ export class Web3Accounts extends ContractBase {
         return this.ethSend(callData)
     }
 
+    public async assetApprove(asset: Asset, operator: string, allowance?: string) {
+        const tokenAddr = asset.tokenAddress
+        if (asset.schemaName.toLowerCase() == 'erc721') {
+            return this.approveErc721Proxy(tokenAddr, operator)
+        } else if (asset.schemaName.toLowerCase() == 'erc1155') {
+            return this.approveErc1155Proxy(tokenAddr, operator)
+        } else if (asset.schemaName.toLowerCase() == 'erc20') {
+            return this.approveErc20Proxy(tokenAddr, operator, allowance)
+        } else {
+            throw 'assetApprove error'
+        }
+    }
+
+    //-----------Get basic asset information-----------------
     public async getGasBalances(account?: { address?: string, rpcUrl?: string }): Promise<string> {
         const {address, rpcUrl} = account || {}
         const owner = address || this.signerAddress
@@ -221,11 +233,8 @@ export class Web3Accounts extends ContractBase {
         return ethBal
     }
 
-    public async getTokenBalances({
-                                      tokenAddr,
-                                      account,
-                                      rpcUrl
-                                  }: { tokenAddr: string, account?: string, rpcUrl?: string }): Promise<string> {
+    public async getTokenBalances(params: { tokenAddr: string, account?: string, rpcUrl?: string }): Promise<string> {
+        const {tokenAddr, account, rpcUrl} = params
         const owner = account || this.signerAddress
         let provider: any = this.signer
         let erc20Bal = '0'
@@ -346,16 +355,6 @@ export class Web3Accounts extends ContractBase {
         }
     }
 
-    public async assetApprove(asset: Asset, operator: string) {
-        const tokenAddr = asset.tokenAddress
-        if (asset.schemaName.toLowerCase() == 'erc721') {
-            return this.approveErc721Proxy(tokenAddr, operator)
-        } else if (asset.schemaName.toLowerCase() == 'erc1155') {
-            return this.approveErc1155Proxy(tokenAddr, operator)
-        } else {
-            throw 'assetApprove error'
-        }
-    }
 
     public async getAssetBalances(asset: Asset, account?: string) {
         const owner = account || this.signerAddress
@@ -367,53 +366,9 @@ export class Web3Accounts extends ContractBase {
         } else if (asset.schemaName.toLowerCase() == 'erc1155') {
             balances = await this.getERC1155Balances(tokenAddr, tokenId, owner)
         } else if (asset.schemaName.toLowerCase() == 'erc20') {
-            balances = await this.getERC20Balances(tokenAddr, tokenId)
+            balances = await this.getERC20Balances(tokenAddr, owner)
         }
         return balances
-    }
-
-    public async assetTransfer(metadata: ExchangeMetadata, to: string) {
-        const from = this.signerAddress
-        const assetQ = metadataToAsset(metadata)
-        const balance = await this.getAssetBalances(assetQ, from)
-
-        const {asset, schema} = metadata
-        const {address, quantity, data, id} = asset
-
-        if (Number(quantity || 1) > Number(balance)) {
-            throw 'Asset balances not enough'
-        }
-
-        const tokenId = id
-        let calldata
-        if (schema.toLowerCase() == 'erc721') {
-            const erc721 = this.getContract(address, this.erc721Abi)
-            // const gas = await erc721.estimateGas.safeTransferFrom(from, to, tokenId)
-            calldata = await erc721.populateTransaction.safeTransferFrom(from, to, tokenId)
-        }
-
-        if (schema.toLowerCase() == 'cryptokitties') {
-            const erc721 = this.getContract(address, this.erc721Abi)
-            calldata = await erc721.populateTransaction.transferFrom(from, to, tokenId)
-        }
-
-        if (schema.toLowerCase() == 'erc1155') {
-            const erc1155 = this.getContract(address, this.erc1155Abi)
-            // const gas = await erc1155.estimateGas.safeTransferFrom(from, to, tokenId, quantity, data || '0x')
-            calldata = await erc1155.populateTransaction.safeTransferFrom(from, to, tokenId, quantity, data || '0x')
-        }
-
-        if (schema.toLowerCase() == 'erc20') {
-            const erc20 = this.getContract(address, this.erc20Abi)
-            calldata = await erc20.populateTransaction.safeTransferFrom(from, to, quantity)
-        }
-        if (!calldata) throw schema + 'asset transfer error'
-        return this.ethSend(calldata)
-    }
-
-    public async transfer(asset: Asset, quantity: string, to: string) {
-        const metadata = assetToMetadata(asset, quantity)
-        return this.assetTransfer(metadata, to)
     }
 
     public async getUserTokenBalance(token: {
@@ -496,6 +451,51 @@ export class Web3Accounts extends ContractBase {
             erc20Bals
         }
     }
+
+    public async assetTransfer(metadata: ExchangeMetadata, to: string) {
+        const from = this.signerAddress
+        const assetQ = metadataToAsset(metadata)
+        const balance = await this.getAssetBalances(assetQ, from)
+
+        const {asset, schema} = metadata
+        const {address, quantity, data, id} = asset
+
+        if (Number(quantity || 1) > Number(balance)) {
+            throw 'Asset balances not enough'
+        }
+
+        const tokenId = id
+        let calldata
+        if (schema.toLowerCase() == 'erc721') {
+            const erc721 = this.getContract(address, this.erc721Abi)
+            // const gas = await erc721.estimateGas.safeTransferFrom(from, to, tokenId)
+            calldata = await erc721.populateTransaction.safeTransferFrom(from, to, tokenId)
+        }
+
+        if (schema.toLowerCase() == 'cryptokitties') {
+            const erc721 = this.getContract(address, this.erc721Abi)
+            calldata = await erc721.populateTransaction.transferFrom(from, to, tokenId)
+        }
+
+        if (schema.toLowerCase() == 'erc1155') {
+            const erc1155 = this.getContract(address, this.erc1155Abi)
+            // const gas = await erc1155.estimateGas.safeTransferFrom(from, to, tokenId, quantity, data || '0x')
+            calldata = await erc1155.populateTransaction.safeTransferFrom(from, to, tokenId, quantity, data || '0x')
+        }
+
+        if (schema.toLowerCase() == 'erc20') {
+            const erc20 = this.getContract(address, this.erc20Abi)
+            calldata = await erc20.populateTransaction.safeTransferFrom(from, to, quantity)
+        }
+        if (!calldata) throw schema + 'asset transfer error'
+        return this.ethSend(calldata)
+    }
+
+    public async transfer(asset: Asset, quantity: string, to: string) {
+        const metadata = assetToMetadata(asset, quantity)
+        return this.assetTransfer(metadata, to)
+    }
+
 
     public async wethWithdraw(ether: string) {
         const wad = ethers.utils.parseEther(ether)

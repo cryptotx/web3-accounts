@@ -1,4 +1,5 @@
-import {getChainRpcUrl, Web3Accounts} from "../index";
+import { Web3Accounts} from "../index";
+import {getChainRpcUrl} from "web3-wallets";
 
 const buyer = '0x9F7A946d935c8Efc7A8329C0d894A69bA241345A';
 const seller = '0x0A56b3317eD60dC4E1027A63ffbE9df6fb102401';
@@ -8,8 +9,7 @@ const seller = '0x0A56b3317eD60dC4E1027A63ffbE9df6fb102401';
         const chainId = 4
         const sdk = new Web3Accounts({
             chainId,
-            address: seller,
-            // priKey: secrets.accounts[seller]
+            address: seller
         })
 
         const userERC20s = await sdk.getUserTokensBalance({
