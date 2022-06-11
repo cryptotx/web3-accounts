@@ -22,12 +22,14 @@ export type {
     SellOrderParams,
     CreateOrderParams,
     LowerPriceOrderParams,
-    AcceptOrderOption,
+    MatchOption,
+    MatchOrderOption,
     OrderOption,
-    AcceptOrdersParams
+    MatchOrdersParams,
+    TokenSchemaNames
 } from './src/types'
 
-export {TokenSchemaName, ElementSchemaName, OrderType, OfferType} from './src/types'
+export {ElementSchemaName, OrderType, OfferType} from './src/types'
 
 
 

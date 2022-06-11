@@ -1,5 +1,5 @@
 import {ContractBase} from './contracts'
-import {Asset, TokenSchemaName, ExchangeMetadata, Token} from "./types";
+import {Asset, ExchangeMetadata, Token} from "./types";
 import {PopulatedTransaction} from "@ethersproject/contracts";
 import {Bytes} from "@ethersproject/bytes";
 import {
@@ -10,7 +10,8 @@ import {
     LimitedCallSpec,
     NULL_ADDRESS,
     WalletInfo,
-    ETH_TOKEN_ADDRESS, splitECSignature
+    ETH_TOKEN_ADDRESS, splitECSignature,
+    TokenSchemaNames,
 } from "web3-wallets";
 import {ECSignature} from "web3-wallets/lib/src/signature/eip712TypeData";
 
@@ -310,11 +311,11 @@ export class Web3Accounts extends ContractBase {
         let isApprove = false, balances = '0', calldata
         const tokenAddr = asset.tokenAddress
         const tokenId = asset.tokenId || '0'
-        if (asset.schemaName == TokenSchemaName.ERC721) {
+        if (asset.schemaName.toLowerCase() == 'erc721') {
             isApprove = await this.getERC721Allowance(tokenAddr, operator, owner)
             calldata = isApprove ? undefined : await this.approveErc721ProxyCalldata(tokenAddr, operator)
             balances = await this.getERC721Balances(tokenAddr, tokenId, owner)
-        } else if (asset.schemaName == TokenSchemaName.ERC1155) {
+        } else if (asset.schemaName.toLowerCase() == 'erc1155') {
             isApprove = await this.getERC1155Allowance(tokenAddr, operator, owner)
             calldata = isApprove ? undefined : await this.approveErc1155ProxyCalldata(tokenAddr, operator)
             balances = await this.getERC1155Balances(tokenAddr, tokenId, owner)
@@ -347,9 +348,9 @@ export class Web3Accounts extends ContractBase {
 
     public async assetApprove(asset: Asset, operator: string) {
         const tokenAddr = asset.tokenAddress
-        if (asset.schemaName == TokenSchemaName.ERC721) {
+        if (asset.schemaName.toLowerCase() == 'erc721') {
             return this.approveErc721Proxy(tokenAddr, operator)
-        } else if (asset.schemaName == TokenSchemaName.ERC1155) {
+        } else if (asset.schemaName.toLowerCase() == 'erc1155') {
             return this.approveErc1155Proxy(tokenAddr, operator)
         } else {
             throw 'assetApprove error'
@@ -361,11 +362,11 @@ export class Web3Accounts extends ContractBase {
         let balances = '0'
         const tokenAddr = asset.tokenAddress
         const tokenId = asset.tokenId || '0'
-        if (asset.schemaName == TokenSchemaName.ERC721) {
+        if (asset.schemaName.toLowerCase() == 'erc721') {
             balances = await this.getERC721Balances(tokenAddr, tokenId, owner)
-        } else if (asset.schemaName == TokenSchemaName.ERC1155) {
+        } else if (asset.schemaName.toLowerCase() == 'erc1155') {
             balances = await this.getERC1155Balances(tokenAddr, tokenId, owner)
-        } else if (asset.schemaName == TokenSchemaName.ERC20) {
+        } else if (asset.schemaName.toLowerCase() == 'erc20') {
             balances = await this.getERC20Balances(tokenAddr, tokenId)
         }
         return balances
@@ -385,24 +386,24 @@ export class Web3Accounts extends ContractBase {
 
         const tokenId = id
         let calldata
-        if (schema === TokenSchemaName.ERC721) {
+        if (schema.toLowerCase() == 'erc721') {
             const erc721 = this.getContract(address, this.erc721Abi)
             // const gas = await erc721.estimateGas.safeTransferFrom(from, to, tokenId)
             calldata = await erc721.populateTransaction.safeTransferFrom(from, to, tokenId)
         }
 
-        if (schema === TokenSchemaName.CryptoKitties) {
+        if (schema.toLowerCase() == 'cryptokitties') {
             const erc721 = this.getContract(address, this.erc721Abi)
             calldata = await erc721.populateTransaction.transferFrom(from, to, tokenId)
         }
 
-        if (schema === TokenSchemaName.ERC1155) {
+        if (schema.toLowerCase() == 'erc1155') {
             const erc1155 = this.getContract(address, this.erc1155Abi)
             // const gas = await erc1155.estimateGas.safeTransferFrom(from, to, tokenId, quantity, data || '0x')
             calldata = await erc1155.populateTransaction.safeTransferFrom(from, to, tokenId, quantity, data || '0x')
         }
 
-        if (schema === TokenSchemaName.ERC20) {
+        if (schema.toLowerCase() == 'erc20') {
             const erc20 = this.getContract(address, this.erc20Abi)
             calldata = await erc20.populateTransaction.safeTransferFrom(from, to, quantity)
         }
@@ -410,8 +411,7 @@ export class Web3Accounts extends ContractBase {
         return this.ethSend(calldata)
     }
 
-    public async transfer(params: { asset: Asset, quantity: string, to: string, from?: string }) {
-        const {asset, quantity, to} = params
+    public async transfer(asset: Asset, quantity: string, to: string) {
         const metadata = assetToMetadata(asset, quantity)
         return this.assetTransfer(metadata, to)
     }

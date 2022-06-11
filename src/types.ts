@@ -3,7 +3,7 @@ import EventEmitter from 'events'
 
 import {WalletInfo, LimitedCallSpec} from "web3-wallets"
 
-export {TokenSchemaName} from "web3-wallets"
+export type {TokenSchemaNames} from "web3-wallets"
 
 export interface APIConfig {
     chainId?: number
@@ -17,10 +17,7 @@ export interface APIConfig {
     protocolFeeAddress?: string
     contractAddresses?: any
 }
-
-// export type AssetSchemaName = 'ERC20' | 'ERC721' | "ERC1155" | "CryptoKitties" | "ENSShortNameAuction";
-
-
+  
 export enum ElementSchemaName {
     ERC20 = 'ERC20',
     ERC721 = 'ERC721',
@@ -145,11 +142,11 @@ export interface LowerPriceOrderParams {
     accountAddress?: string
 }
 
-export interface AcceptOption {
+export interface MatchOption {
     mixedPayment?: MixedPayment
 }
 
-export interface AcceptOrderOption extends AcceptOption {
+export interface MatchOrderOption extends MatchOption {
     metadata?: string
     takerAmount?: string
     taker?: string
@@ -157,9 +154,9 @@ export interface AcceptOrderOption extends AcceptOption {
     sellTokenId?: string
 }
 
-export type OrderOption = Omit<AcceptOrderOption, "mixedPayment"> & { orderStr: string }
+export type OrderOption = Omit<MatchOrderOption, "mixedPayment"> & { orderStr: string }
 
-export interface AcceptOrdersParams extends AcceptOption {
+export interface MatchOrdersParams extends MatchOption {
     orderList: OrderOption []
 }
 
@@ -181,10 +178,10 @@ export interface ExchangetAgent extends EventEmitter {
     createSellOrder: (order: SellOrderParams) => Promise<any>
     createLowerPriceOrder: (order: LowerPriceOrderParams) => Promise<any>
     createBuyOrder: (order: BuyOrderParams) => Promise<any>
-    acceptOrder: (order: string, option?: AcceptOrderOption) => Promise<any>
+    matchOrder: (order: string, option?: MatchOrderOption) => Promise<any>
     cancelOrders: (orders: string[]) => Promise<any>
     getRegisterProxy?: () => Promise<{ isRegister: boolean, accountProxy: string, calldata: LimitedCallSpec | undefined }>
-    acceptOrders?: (orders: AcceptOrdersParams) => Promise<any>
+    matchOrders?: (orders: MatchOrdersParams) => Promise<any>
     checkOrderMatch?: (order: string, params?: MatchParams) => Promise<any>
     checkOrderPost?: (order: string, params?: MatchParams) => Promise<any>
 }
