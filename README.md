@@ -29,23 +29,38 @@ const sign =await account.signMessage('Hello Web3')
 
     async signTypedData(typedData: EIP712TypedData)
 ```
+```ts
+    const user = new Web3Accounts({
+        chainId,
+        address: seller,
+        privateKeys: secrets.privateKeys,
+    })
+    const msg = 'hello web3'
+    const ecSign = user.ecSignMessage(msg)
+    const sign = await user.signMessage(msg)
+    console.assert(joinECSignature(ecSign) == sign.signature)
+```
 
 ## Approve and de-Approve
 ```ts
-async approveErc20Proxy(tokenAddr: string, spender: string, allowance?: string)
+async approveERC20Proxy(tokenAddr: string, spender: string, allowance?: string)
 
-async cancelErc20Approve(tokenAddr: string, operator: string)
+async cancelERC20Approve(tokenAddr: string, operator: string)
 
-async approveErc721Proxy(tokenAddr: string, operator: string)
+async approveERC721Proxy(tokenAddr: string, operator: string)
 
-async cancelErc721Approve(tokenAddr: string, operator: string)
+async cancelERC721Approve(tokenAddr: string, operator: string)
 
-async approveErc1155Proxy(tokenAddr: string, operator: string)
+async approveERC1155Proxy(tokenAddr: string, operator: string)
 
-async cancelErc1155Approve(tokenAddr: string, operator: string)
+async cancelERC1155Approve(tokenAddr: string, operator: string)
 
 async assetApprove(asset: Asset, operator: string, allowance?: string)
 
+```
+```ts
+ const erc20Approve = await user.approveERC20Proxy(tokenAddr, seller, "200")
+ await erc20Approve.wait()
 ```
 ## Get basic asset information
 ```ts
@@ -86,11 +101,30 @@ async getUserTokensBalance(params: {
     rpcUrl?: string
 })
 ```
+```ts
+const erc721={
+    tokenId: '27',
+    tokenAddress: '0x56df6c8484500dc3e2fe5a02bed70b4969ffafdb',
+    schemaName: 'erc721'
+}
+const bal721 = await user.getAssetBalances(erc721)
+const erc1155 ={
+    tokenId: '13',
+    tokenAddress: '0x991a868aa7b0a9a24565ede2d8fe758874a6a217',
+    schemaName: 'ERC1155'
+} 
+const bal1155 = await user.getAssetBalances(erc1155)
+```
 ## Transfer of assets
 ```ts
 async assetTransfer(metadata: ExchangeMetadata, to: string)
 
-async transfer(asset: Asset, quantity: string, to: string)
+async transfer(asset: Asset, to: string, quantity: number)
+```
+
+```ts
+ const tx = await user.transfer(erc721, seller, 1)
+ await tx.wait()
 ```
 
 ## Weth transfer between eth
@@ -98,6 +132,16 @@ async transfer(asset: Asset, quantity: string, to: string)
 async wethWithdraw(ether: string)
 
 async wethDeposit(ether: string, depositFunc?: false)
+```
+
+```ts
+    const bal20 = await user.getERC20Balances(tokenAddr)
+    const wethBal = ethers.utils.formatUnits(bal20).toString()
+    const wethWithdrawTx = await user.wethWithdraw(wethBal)
+    await wethWithdrawTx.wait()
+
+    const wethDepositTx = await user.wethDeposit(wethBal)
+    await wethDepositTx.wait()
 ```
 ## Type conversion funciton
 ```ts

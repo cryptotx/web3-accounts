@@ -1,4 +1,4 @@
-import {TokenSchemaName} from "../index";
+
 
 export const CryptoKitties = {
     4: [{
@@ -26,18 +26,18 @@ export const asset1155Share = {
 export const asset721 = {
     4: [
         {
-            tokenId: '9',
-            tokenAddress: '0xb556f251eacbec4badbcddc4a146906f2c095bee',
-            schemaName: TokenSchemaName.ERC721
+            tokenId: '27',
+            tokenAddress: '0x56df6c8484500dc3e2fe5a02bed70b4969ffafdb',
+            schemaName: 'erc721'
         },
         {
             tokenId: '1',
             tokenAddress: '0x323ce7344EeecfCe716720599cE7689930D25119',
-            schemaName: TokenSchemaName.ERC721
+            schemaName: 'erc721'
         }, {
             tokenId: '17',
             tokenAddress: '0x2d0c5c5a495134e53ea65c94c4e07f45731f7201',
-            schemaName: TokenSchemaName.ERC721
+            schemaName: 'erc721'
         }],
     97: [
         {
@@ -90,6 +90,11 @@ export const asset721 = {
 
 export const asset1155 = {
     4: [
+        {
+            tokenId: '13',
+            tokenAddress: '0x991a868aa7b0a9a24565ede2d8fe758874a6a217',
+            schemaName: 'ERC1155'
+        },
         {
             tokenId: '82534249212256588388302984865502979938480676321224842567195230008927460524332',
             tokenAddress: '0x88b48f654c30e99bc2e4a1559b4dcf1ad93fa656',

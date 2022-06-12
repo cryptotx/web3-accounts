@@ -2,11 +2,12 @@ import ERC20Abi from './common/ERC20.json'
 import ERC721Abi from './common/ERC721.json'
 import ERC1155Abi from './common/ERC1155.json'
 import WETHAbi from './common/WETH.json'
+import {ContractInterface} from "web3-wallets";
 
 export interface AbiInfo {
     contractName: string
     sourceName?: string
-    abi: any
+    abi: ContractInterface
 }
 
 export const ContractABI = {

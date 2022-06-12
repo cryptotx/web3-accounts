@@ -4,7 +4,6 @@ import {PopulatedTransaction} from "@ethersproject/contracts";
 import {Bytes} from "@ethersproject/bytes";
 import {
     ethers, providers,
-    ecSignMessage,
     EIP712TypedData,
     getProvider,
     LimitedCallSpec,
@@ -12,8 +11,9 @@ import {
     WalletInfo,
     ETH_TOKEN_ADDRESS,
     splitECSignature,
-    TokenSchemaNames
+    getChainRpcUrl, hexUtils, ecSignHash
 } from "web3-wallets";
+import {privateKeysToAddress} from "web3-wallets/lib/src/signature/eip712TypeData";
 
 export const ETHToken: Token = {
     name: 'etherem',
@@ -85,13 +85,31 @@ export class Web3Accounts extends ContractBase {
         super(wallet)
     }
 
+    public async optimizationRpc() {
+        const url = await getChainRpcUrl(this.walletInfo.chainId)
+        if (this.walletInfo.rpcUrl) {
+            this.walletInfo.rpcUrl.url = url
+        } else {
+            this.walletInfo.rpcUrl = {url}
+        }
+        return url
+    }
+
     /**
      * Generate the EC signature for a hash given a private key.
      */
     public ecSignMessage(message: string, privateKey?: string) {
-        const priKey = privateKey || this.walletInfo.privateKeys && this.walletInfo.privateKeys[0]
-        if (!priKey) throw Error("Private key error")
-        const signMsg = ecSignMessage(message, priKey)
+        let priKey = ""
+        if (privateKey) {
+            priKey = privateKey
+        } else {
+            if (this.walletInfo.privateKeys) {
+                const addr = privateKeysToAddress(this.walletInfo.privateKeys)
+                priKey = addr[this.walletInfo.address.toLowerCase()]
+            }
+        }
+        if (priKey == "") throw Error("Private key error")
+        const signMsg = ecSignHash(hexUtils.hashMessage(message), priKey)
         return {
             r: signMsg.r,
             s: signMsg.s,
@@ -109,7 +127,7 @@ export class Web3Accounts extends ContractBase {
             throw error
         })
 
-        if (typeof signature != 'string') throw "SignMessage error"
+        if (typeof signature != 'string') throw new Error("SignMessage error")
         const pubAddress = ethers.utils.verifyMessage(message, signature)
         console.assert(pubAddress.toLowerCase() == this.walletInfo.address.toLowerCase(), 'Sign message error')
         return {message, signature}
@@ -142,66 +160,66 @@ export class Web3Accounts extends ContractBase {
         }
     }
 
-    public async approveErc20ProxyCalldata(tokenAddr: string, spender: string, allowance?: string): Promise<LimitedCallSpec> {
+    public async approveERC20ProxyCalldata(tokenAddr: string, spender: string, allowance?: string): Promise<LimitedCallSpec> {
         const quantity = allowance || ethers.constants.MaxInt256.toString() //200e18.toString() //
         const erc20 = this.getContract(tokenAddr, this.erc20Abi)
         const data = await erc20.populateTransaction.approve(spender, quantity)
         return transactionToCallData(data)
     }
 
-    public async approveErc20Proxy(tokenAddr: string, spender: string, allowance?: string) {
-        const callData = await this.approveErc20ProxyCalldata(tokenAddr, spender, allowance)
+    public async approveERC20Proxy(tokenAddr: string, spender: string, allowance?: string) {
+        const callData = await this.approveERC20ProxyCalldata(tokenAddr, spender, allowance)
         return this.ethSend(callData)
     }
 
-    public async cancelErc20Approve(tokenAddr: string, operator: string) {
-        const callData = await this.approveErc20ProxyCalldata(tokenAddr, operator, "1")
+    public async cancelERC20Approve(tokenAddr: string, operator: string) {
+        const callData = await this.approveERC20ProxyCalldata(tokenAddr, operator, "0")
         return this.ethSend(callData)
     }
 
-    public async approveErc721ProxyCalldata(tokenAddr: string, operator: string, isApprove = true): Promise<LimitedCallSpec> {
+    public async approveERC721ProxyCalldata(tokenAddr: string, operator: string, isApprove = true): Promise<LimitedCallSpec> {
         const erc721 = this.getContract(tokenAddr, this.erc721Abi)
         const data = await erc721.populateTransaction.setApprovalForAll(operator, isApprove)
         return transactionToCallData(data)
 
     }
 
-    public async approveErc721Proxy(tokenAddr: string, operator: string) {
-        const callData = await this.approveErc721ProxyCalldata(tokenAddr, operator)
+    public async approveERC721Proxy(tokenAddr: string, operator: string) {
+        const callData = await this.approveERC721ProxyCalldata(tokenAddr, operator)
         return this.ethSend(callData)
     }
 
-    public async cancelErc721Approve(tokenAddr: string, operator: string) {
-        const callData = await this.approveErc721ProxyCalldata(tokenAddr, operator, false)
+    public async cancelERC721Approve(tokenAddr: string, operator: string) {
+        const callData = await this.approveERC721ProxyCalldata(tokenAddr, operator, false)
         return this.ethSend(callData)
     }
 
-    public async approveErc1155ProxyCalldata(tokenAddr: string, operator: string, isApprove = true) {
+    public async approveERC1155ProxyCalldata(tokenAddr: string, operator: string, isApprove = true) {
         const erc1155 = this.getContract(tokenAddr, this.erc1155Abi)
         const data = await erc1155.populateTransaction.setApprovalForAll(operator, isApprove)
         return transactionToCallData(data)
     }
 
     public async approveErc1155Proxy(tokenAddr: string, operator: string) {
-        const calldata = await this.approveErc1155ProxyCalldata(tokenAddr, operator)
+        const calldata = await this.approveERC1155ProxyCalldata(tokenAddr, operator)
         return this.ethSend(calldata)
     }
 
     public async cancelErc1155Approve(tokenAddr: string, operator: string) {
-        const callData = await this.approveErc1155ProxyCalldata(tokenAddr, operator, false)
+        const callData = await this.approveERC1155ProxyCalldata(tokenAddr, operator, false)
         return this.ethSend(callData)
     }
 
     public async assetApprove(asset: Asset, operator: string, allowance?: string) {
         const tokenAddr = asset.tokenAddress
         if (asset.schemaName.toLowerCase() == 'erc721') {
-            return this.approveErc721Proxy(tokenAddr, operator)
+            return this.approveERC721Proxy(tokenAddr, operator)
         } else if (asset.schemaName.toLowerCase() == 'erc1155') {
             return this.approveErc1155Proxy(tokenAddr, operator)
         } else if (asset.schemaName.toLowerCase() == 'erc20') {
-            return this.approveErc20Proxy(tokenAddr, operator, allowance)
+            return this.approveERC20Proxy(tokenAddr, operator, allowance)
         } else {
-            throw 'assetApprove error'
+            throw new Error('Asset approve error')
         }
     }
 
@@ -322,11 +340,11 @@ export class Web3Accounts extends ContractBase {
         const tokenId = asset.tokenId || '0'
         if (asset.schemaName.toLowerCase() == 'erc721') {
             isApprove = await this.getERC721Allowance(tokenAddr, operator, owner)
-            calldata = isApprove ? undefined : await this.approveErc721ProxyCalldata(tokenAddr, operator)
+            calldata = isApprove ? undefined : await this.approveERC721ProxyCalldata(tokenAddr, operator)
             balances = await this.getERC721Balances(tokenAddr, tokenId, owner)
         } else if (asset.schemaName.toLowerCase() == 'erc1155') {
             isApprove = await this.getERC1155Allowance(tokenAddr, operator, owner)
-            calldata = isApprove ? undefined : await this.approveErc1155ProxyCalldata(tokenAddr, operator)
+            calldata = isApprove ? undefined : await this.approveERC1155ProxyCalldata(tokenAddr, operator)
             balances = await this.getERC1155Balances(tokenAddr, tokenId, owner)
         }
         return {
@@ -344,14 +362,14 @@ export class Web3Accounts extends ContractBase {
             && tokenAddr.toLowerCase() != ETH_TOKEN_ADDRESS.toLowerCase()) {
             const allowance = await this.getERC20Allowance(tokenAddr, spender, owner)
             const balances = await this.getERC20Balances(tokenAddr, owner)
-            const calldata = await this.approveErc20ProxyCalldata(tokenAddr, spender)
+            const calldata = await this.approveERC20ProxyCalldata(tokenAddr, spender)
             return {
                 allowance,
                 balances,
                 calldata
             }
         } else {
-            throw 'User Account GetTokenApprove error'
+            throw new Error('User Account GetTokenApprove error')
         }
     }
 
@@ -392,7 +410,6 @@ export class Web3Accounts extends ContractBase {
                 account,
                 rpcUrl
             })
-        // const {erc20Bal, ethBal} = await this.userAccount.getAccountBalance({account, tokenAddr, rpcUrl})
         return {
             ethBal: Number(ethBal),
             ethValue: ethers.utils.formatEther(ethBal),
@@ -461,7 +478,7 @@ export class Web3Accounts extends ContractBase {
         const {address, quantity, data, id} = asset
 
         if (Number(quantity || 1) > Number(balance)) {
-            throw 'Asset balances not enough'
+            throw new Error('Asset balances not enough')
         }
 
         const tokenId = id
@@ -487,24 +504,27 @@ export class Web3Accounts extends ContractBase {
             const erc20 = this.getContract(address, this.erc20Abi)
             calldata = await erc20.populateTransaction.safeTransferFrom(from, to, quantity)
         }
-        if (!calldata) throw schema + 'asset transfer error'
+        if (!calldata) throw new Error(schema + 'asset transfer error')
+
         return this.ethSend(calldata)
     }
 
-    public async transfer(asset: Asset, quantity: string, to: string) {
-        const metadata = assetToMetadata(asset, quantity)
+    public async transfer(asset: Asset, to: string, quantity: number) {
+        const metadata = assetToMetadata(asset, quantity.toString())
         return this.assetTransfer(metadata, to)
     }
 
 
     public async wethWithdraw(ether: string) {
         const wad = ethers.utils.parseEther(ether)
-        const data = await this.GasWarpperContract.populateTransaction.withdraw(wad)
+        const data = await this?.GasWarpperContract?.populateTransaction.withdraw(wad)
+        if (!data) throw new Error("Chain is not supported ")
         return this.ethSend(transactionToCallData(data))
     }
 
     public async wethDeposit(ether: string, depositFunc?: false) {
         const wad = ethers.utils.parseEther(ether)
+        if (!this.GasWarpperContract) throw new Error("Chain is not supported ")
         let callData = {
             to: this.GasWarpperContract.address,
             value: wad.toString()
