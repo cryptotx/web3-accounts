@@ -1,7 +1,6 @@
 import {Asset, Web3Accounts} from "../index";
-// @ts-ignore
 import * as secrets from '../../../secrets.json'
-import {asset721, asset1155, erc20Tokens} from "./assets";
+import {asset721, asset1155, erc20Tokens} from "./data/assets";
 import {ethers} from "ethers";
 import {joinECSignature} from "web3-wallets";
 

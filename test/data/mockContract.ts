@@ -9,10 +9,10 @@ import {
     Signer,
     WalletInfo
 } from "web3-wallets";
-import {Token} from "../src/types";
+import {Token} from "../../src/types";
 import {ethSend, privateKeysToAddress} from "web3-wallets";
-import {ContractABI} from "../src/contracts/abi/index";
-import {COMMON_CONTRACTS_ADDRESSES} from "../src/contracts/index";
+import {ContractABI} from "../../src/contracts/abi/index";
+import {COMMON_CONTRACTS_ADDRESSES} from "../../src/contracts/index";
 
 export const MOCK_CONTRACTS_ADDRESSES = {
     1: {

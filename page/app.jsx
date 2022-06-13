@@ -9,11 +9,9 @@ const root = createRoot(document.getElementById('root'));
 
 // 装载
 root.render(
-
-        <ConfigProvider>
-            <MainLayout/>
-        </ConfigProvider>
-
+    <ConfigProvider>
+        <MainLayout/>
+    </ConfigProvider>
 );
 // // 卸载
 // root.unmount();
