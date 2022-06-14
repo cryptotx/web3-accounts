@@ -52,7 +52,7 @@ export class Web3Accounts extends ContractBase {
         }
     }
 
-    public async signMessage(message: string | Bytes): Promise<any> {
+    public async signMessage(message: string | Bytes): Promise<string> {
         const {walletSigner} = getProvider(this.walletInfo)
         if (ethers.utils.isHexString(message)) {
             message = ethers.utils.arrayify(message)
@@ -65,7 +65,7 @@ export class Web3Accounts extends ContractBase {
         if (typeof signature != 'string') throw new Error("SignMessage error")
         const pubAddress = ethers.utils.verifyMessage(message, signature)
         console.assert(pubAddress.toLowerCase() == this.walletInfo.address.toLowerCase(), 'Sign message error')
-        return {message, signature}
+        return signature
     }
 
     public async signTypedData(typedData: EIP712TypedData): Promise<any> {

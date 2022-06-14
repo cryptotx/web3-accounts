@@ -9,10 +9,9 @@ import {
     Signer,
     WalletInfo
 } from "web3-wallets";
-import {Token} from "../../src/types";
 import {ethSend, privateKeysToAddress} from "web3-wallets";
-import {ContractABI} from "../../src/contracts/abi/index";
-import {COMMON_CONTRACTS_ADDRESSES} from "../../src/contracts/index";
+import {ContractABI} from "./abi/index";
+import {ContractAddresses} from "./index";
 
 export const MOCK_CONTRACTS_ADDRESSES = {
     1: {
@@ -59,19 +58,20 @@ export const MOCK_CONTRACTS_ADDRESSES = {
 }
 
 
-export class ContractBase extends EventEmitter {
+export class MockContract extends EventEmitter {
     public chainId: number
     public readonly signer: Signer
     public readonly signerAddress: string
 
     public walletInfo: WalletInfo
-    public erc20Abi: any
-    public erc721Abi: any
-    public erc1155Abi: any
+    public erc20Abi: ContractInterface
+    public erc721Abi: ContractInterface
+    public erc1155Abi: ContractInterface
+    public contractAddresses: ContractAddresses
+
     public Mock721: Contract | undefined
     public Mock1155: Contract | undefined
     public Mock20: Contract | undefined
-
 
     constructor(wallet: WalletInfo) {
         super()
@@ -82,7 +82,6 @@ export class ContractBase extends EventEmitter {
         const accounts = wallet?.privateKeys && privateKeysToAddress(wallet.privateKeys)
         if (accounts) {
             if (!accounts[wallet.address.toLowerCase()]) throw 'PriKey error'
-            // console.log('PriKey address', wallet.address.toLowerCase())
         }
         this.walletInfo = wallet
         const {address, chainId, walletSigner} = getProvider(wallet)
@@ -94,14 +93,14 @@ export class ContractBase extends EventEmitter {
         this.erc20Abi = ContractABI.erc20.abi
         this.erc721Abi = ContractABI.erc721.abi
         this.erc1155Abi = ContractABI.erc1155.abi
-        const common = COMMON_CONTRACTS_ADDRESSES[wallet.chainId]
 
         const mock = MOCK_CONTRACTS_ADDRESSES[wallet.chainId]
+        this.contractAddresses = mock
         if (mock) {
             this.Mock721 = this.getContract(mock.ERC721, ContractABI.erc721.abi)
             this.Mock1155 = this.getContract(mock.ERC1155, ContractABI.erc1155.abi)
             if (mock.ERC20) {
-                this.Mock20 = this.getContract(mock.ERC1155, ContractABI.erc1155.abi)
+                this.Mock20 = this.getContract(mock.ERC1155, ContractABI.erc20.abi)
             }
         }
     }

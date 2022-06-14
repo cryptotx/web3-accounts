@@ -1,4 +1,7 @@
 export {Web3Accounts} from "./src"
+export {BaseFetch} from "./src/baseFetch"
+export {AbiCoders} from "./src/abiCoders"
+export {MockContract} from "./src/contracts/mockContract"
 export {
     assetToMetadata,
     metadataToAsset,
@@ -8,7 +11,6 @@ export {
     sleep,
     fetchJson,
     checkURL,
-    BaseFetch,
     ETHToken,
     NullToken
 } from './src/hepler'

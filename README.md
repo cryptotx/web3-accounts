@@ -37,8 +37,8 @@ const sign =await account.signMessage('Hello Web3')
     })
     const msg = 'hello web3'
     const ecSign = user.ecSignMessage(msg)
-    const sign = await user.signMessage(msg)
-    console.assert(joinECSignature(ecSign) == sign.signature)
+    const signature = await user.signMessage(msg)
+    console.assert(joinECSignature(ecSign) == signature)
 ```
 
 ## Approve and de-Approve
