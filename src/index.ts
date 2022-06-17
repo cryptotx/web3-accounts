@@ -1,5 +1,5 @@
 import {ContractBase} from './contracts'
-import {Asset, ExchangeMetadata, Token} from "./types";
+import {ApproveInfo, Asset, ExchangeMetadata, Token} from "./types";
 import {Bytes} from "@ethersproject/bytes";
 import {
     ethers, providers,
@@ -10,9 +10,9 @@ import {
     WalletInfo,
     ETH_TOKEN_ADDRESS,
     splitECSignature,
-    getChainRpcUrl, hexUtils, ecSignHash
+    getChainRpcUrl, hexUtils, ecSignHash, utils
 } from "web3-wallets";
-import {privateKeysToAddress} from "web3-wallets/lib/src/signature/eip712TypeData";
+import {ECSignature, privateKeysToAddress} from "web3-wallets/lib/src/signature/eip712TypeData";
 import {assetToMetadata, metadataToAsset, transactionToCallData} from "./hepler";
 
 export class Web3Accounts extends ContractBase {
@@ -54,8 +54,8 @@ export class Web3Accounts extends ContractBase {
 
     public async signMessage(message: string | Bytes): Promise<string> {
         const {walletSigner} = getProvider(this.walletInfo)
-        if (ethers.utils.isHexString(message)) {
-            message = ethers.utils.arrayify(message)
+        if (utils.isHexString(message)) {
+            message = utils.arrayify(message)
         }
         const signature = await walletSigner.signMessage(message).catch((error: any) => {
             this.emit('SignMessage', error)
@@ -63,12 +63,13 @@ export class Web3Accounts extends ContractBase {
         })
 
         if (typeof signature != 'string') throw new Error("SignMessage error")
-        const pubAddress = ethers.utils.verifyMessage(message, signature)
+        const pubAddress = utils.verifyMessage(message, signature)
         console.assert(pubAddress.toLowerCase() == this.walletInfo.address.toLowerCase(), 'Sign message error')
         return signature
     }
 
-    public async signTypedData(typedData: EIP712TypedData): Promise<any> {
+    public async signTypedData(typedData: EIP712TypedData)
+        : Promise<{ signature: string, signatureVRS: ECSignature, typedData: EIP712TypedData }> {
 
         const {walletProvider, walletSigner} = getProvider(this.walletInfo)
         const types = Object.assign({}, typedData.types)
@@ -85,7 +86,7 @@ export class Web3Accounts extends ContractBase {
             throw error
         })
 
-        const pubAddress = ethers.utils.verifyTypedData(typedData.domain, types, typedData.message, signature)
+        const pubAddress = utils.verifyTypedData(typedData.domain, types, typedData.message, signature)
         const msg = `VerifyTypedData error ${pubAddress} ${this.walletInfo.address}`
         console.assert(pubAddress.toLowerCase() == this.walletInfo.address.toLowerCase(), msg)
         return {
@@ -200,7 +201,7 @@ export class Web3Accounts extends ContractBase {
             provider = new providers.JsonRpcProvider(rpc, network)
         }
         if (tokenAddr
-            && ethers.utils.isAddress(tokenAddr)
+            && utils.isAddress(tokenAddr)
             && tokenAddr != NULL_ADDRESS
             && tokenAddr.toLowerCase() != ETH_TOKEN_ADDRESS.toLowerCase()) {
 
@@ -268,7 +269,7 @@ export class Web3Accounts extends ContractBase {
     }
 
     public async getAssetApprove(asset: Asset, operator: string, account?: string)
-        : Promise<{ isApprove: boolean, balances: string, calldata: LimitedCallSpec | undefined }> {
+        : Promise<ApproveInfo> {
         const owner = account || this.signerAddress
         let isApprove = false, balances = '0', calldata
         const tokenAddr = asset.tokenAddress
@@ -292,7 +293,7 @@ export class Web3Accounts extends ContractBase {
     public async getTokenApprove(tokenAddr: string, spender: string, account?: string)
         : Promise<{ allowance: string, balances: string, calldata: LimitedCallSpec }> {
         const owner = account || this.signerAddress
-        if (ethers.utils.isAddress(tokenAddr)
+        if (utils.isAddress(tokenAddr)
             && tokenAddr != NULL_ADDRESS
             && tokenAddr.toLowerCase() != ETH_TOKEN_ADDRESS.toLowerCase()) {
             const allowance = await this.getERC20Allowance(tokenAddr, spender, owner)
@@ -347,9 +348,9 @@ export class Web3Accounts extends ContractBase {
             })
         return {
             ethBal: Number(ethBal),
-            ethValue: ethers.utils.formatEther(ethBal),
+            ethValue: utils.formatEther(ethBal),
             erc20Bal: Number(erc20Bal),
-            erc20Value: ethers.utils.formatUnits(erc20Bal, decimals)
+            erc20Value: utils.formatUnits(erc20Bal, decimals)
         }
     }
 
@@ -394,12 +395,12 @@ export class Web3Accounts extends ContractBase {
             erc20Bals[tokenAddr] = {
                 decimals,
                 erc20Bal: Number(erc20Bal),
-                erc20Value: ethers.utils.formatUnits(erc20Bal, decimals)
+                erc20Value: utils.formatUnits(erc20Bal, decimals)
             }
         }
         return {
             ethBal: Number(ethBal),
-            ethValue: ethers.utils.formatEther(ethBal),
+            ethValue: utils.formatEther(ethBal),
             erc20Bals
         }
     }
@@ -451,14 +452,14 @@ export class Web3Accounts extends ContractBase {
 
 
     public async wethWithdraw(ether: string) {
-        const wad = ethers.utils.parseEther(ether)
+        const wad = utils.parseEther(ether)
         const data = await this?.GasWarpperContract?.populateTransaction.withdraw(wad)
         if (!data) throw new Error("Chain is not supported ")
         return this.ethSend(transactionToCallData(data))
     }
 
     public async wethDeposit(ether: string, depositFunc?: false) {
-        const wad = ethers.utils.parseEther(ether)
+        const wad = utils.parseEther(ether)
         if (!this.GasWarpperContract) throw new Error("Chain is not supported ")
         let callData = {
             to: this.GasWarpperContract.address,

@@ -143,6 +143,7 @@ async wethDeposit(ether: string, depositFunc?: false)
     const wethDepositTx = await user.wethDeposit(wethBal)
     await wethDepositTx.wait()
 ```
+
 ## Type conversion funciton
 ```ts
   assetToMetadata(asset: Asset, quantity: string = "1", data?: string): ExchangeMetadata 

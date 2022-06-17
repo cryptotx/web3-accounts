@@ -1,6 +1,5 @@
 export {Web3Accounts} from "./src"
 export {BaseFetch} from "./src/baseFetch"
-export {AbiCoders} from "./src/abiCoders"
 export {MockContract} from "./src/contracts/mockContract"
 export {
     assetToMetadata,
@@ -28,12 +27,15 @@ export type {
     BuyOrderParams,
     SellOrderParams,
     CreateOrderParams,
+    FeesInfo,
+    SetOrderParams,
     LowerPriceOrderParams,
     MatchOption,
     MatchOrderOption,
     OrderOption,
     MatchOrdersParams,
-    TokenSchemaNames
+    TokenSchemaNames,
+    ApproveInfo
 } from './src/types'
 
 export {ElementSchemaName, OrderType, OfferType} from './src/types'

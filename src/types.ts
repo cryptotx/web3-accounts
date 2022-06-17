@@ -129,17 +129,29 @@ export interface BuyOrderParams extends CreateOrderParams {
     offerType?: OfferType
 }
 
-export interface LowerPriceOrderParams {
-    orderStr: string
-    basePrice: string
-    royaltyFeePoint: number
+export interface FeesInfo {
     royaltyFeeAddress: string
-    standard: string
-    paymentToken?: Token
+    royaltyFeePoint: number
     protocolFeePoint?: number
     protocolFeeAddress?: string
+}
+
+export interface SetOrderParams extends FeesInfo{
+    orderStr: string
+    basePrice: string
     nonce?: number
+}
+
+export interface LowerPriceOrderParams extends SetOrderParams{
+    standard: string
+    paymentToken?: Token
     accountAddress?: string
+}
+
+export type ApproveInfo = {
+    isApprove: boolean;
+    balances: string;
+    calldata: LimitedCallSpec | undefined;
 }
 
 export interface MatchOption {
