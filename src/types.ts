@@ -17,7 +17,7 @@ export interface APIConfig {
     authToken?: string
     apiTimeout?: number
     proxyUrl?: string
-    protocolFeePoint?: number
+    protocolFeePoints?: number
     protocolFeeAddress?: string
     contractAddresses?: any
 }
@@ -105,7 +105,7 @@ export interface CreateOrderParams {
     paymentToken: Token
     startAmount: number
     expirationTime: number
-    protocolFeePoint?: number
+    protocolFeePoints?: number
     protocolFeeAddress?: string
     standard?: string
     nonce?: number
