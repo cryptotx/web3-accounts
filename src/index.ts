@@ -1,6 +1,6 @@
 import {ContractBase} from './contracts'
-import {ApproveInfo, Asset, ExchangeMetadata, Token} from "./types";
-import {Bytes} from "@ethersproject/bytes";
+import {ApproveInfo, Asset, ExchangeMetadata, Bytes} from "./types";
+
 import {
     ethers, providers,
     EIP712TypedData,
@@ -10,9 +10,9 @@ import {
     WalletInfo,
     ETH_TOKEN_ADDRESS,
     splitECSignature,
-    getChainRpcUrl, hexUtils, ecSignHash, utils
+    getChainRpcUrl, hexUtils, ecSignHash, utils,
+    ECSignature, privateKeysToAddress
 } from "web3-wallets";
-import {ECSignature, privateKeysToAddress} from "web3-wallets/lib/src/signature/eip712TypeData";
 import {assetToMetadata, metadataToAsset, transactionToCallData} from "./hepler";
 
 export class Web3Accounts extends ContractBase {

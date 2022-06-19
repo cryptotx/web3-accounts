@@ -1,6 +1,6 @@
 import EventEmitter from 'events'
 
-import {AbiInfo, ContractABI} from "./abi";
+import { ContractABI} from "./abi";
 import {Token} from "../types";
 import {
     ethers, Signer, ContractInterface, Contract,

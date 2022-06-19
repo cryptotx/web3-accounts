@@ -5,6 +5,10 @@ import {WalletInfo, LimitedCallSpec} from "web3-wallets"
 
 export type {TokenSchemaNames} from "web3-wallets"
 
+export type {Bytes} from "@ethersproject/bytes";
+
+export type {PopulatedTransaction} from "@ethersproject/contracts";
+
 export interface APIConfig {
     chainId?: number
     account?: string
@@ -75,7 +79,7 @@ export interface Token {
 }
 
 
-export enum OrderType {
+export enum OrderSide {
     All = -1,
     Buy = 0,
     Sell = 1
@@ -131,8 +135,8 @@ export interface BuyOrderParams extends CreateOrderParams {
 
 export interface FeesInfo {
     royaltyFeeAddress: string
-    royaltyFeePoint: number
-    protocolFeePoint?: number
+    royaltyFeePoints: number
+    protocolFeePoints?: number
     protocolFeeAddress?: string
 }
 
@@ -177,7 +181,7 @@ export interface ExchangetAgent extends EventEmitter {
     contracts: any
     walletInfo: WalletInfo
     getAssetApprove: (metadatas: ExchangeMetadata[], decimals?: number) => Promise<{ isApprove: boolean, balances: string, calldata: LimitedCallSpec | undefined }[]>
-    getOrderApproveStep: (params: CreateOrderParams, side: OrderType) => Promise<any>
+    getOrderApproveStep: (params: CreateOrderParams, side: OrderSide) => Promise<any>
     getMatchCallData: (params: MatchParams) => Promise<any>
     createSellOrder: (order: SellOrderParams) => Promise<any>
     createLowerPriceOrder: (order: LowerPriceOrderParams) => Promise<any>

@@ -1,10 +1,10 @@
 {
   "name": "web3-accounts",
-  "version": "1.1.31",
+  "version": "1.1.32",
   "description": "Javascript SDK for web3 accounts ",
   "main": "lib/index.js",
   "type": "lib/index.d.ts",
-  "author": "Element Project Developers",
+  "author": "Web3 Project Developers",
   "scripts": {
     "release": "tsc && npm publish",
     "dev:tsc": "tsc -w -p tsconfig.json",
@@ -13,14 +13,12 @@
     "build:web": "webpack -c config/webpack.config.js",
     "start": "webpack --watch",
     "dev": "webpack serve --open -c config/webpack.config.js",
-    "link": "sudo npm link web3-wallets"
+    "link": "sudo npm link web3-accounts"
   },
   "dependencies": {
-    "ethers": "^5.5.1",
-    "https-proxy-agent": "^5.0.1",
+    "web3-wallets": "^2.0.22",
     "tls": "^0.0.1",
-    "net": "^1.0.2",
-    "web3-wallets": "^2.0.18"
+    "net": "^1.0.2"
   },
   "devDependencies": {
     "os-browserify": "^0.3.0",

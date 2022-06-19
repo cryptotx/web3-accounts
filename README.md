@@ -155,15 +155,7 @@ async wethDeposit(ether: string, depositFunc?: false)
   tokenToMetadata(token: Token, quantity: string = "1", data?: string): ExchangeMetadata  
 
   transactionToCallData(data: PopulatedTransaction): LimitedCallSpec
+ 
+```
 
-  async  fetchJson(url: string, options: { opts?: RequestInit, timeout?: number, proxyUrl?: string}）
-```
-```ts
-    const response = await fetchJson(url, {timeout: 10000, proxyUrl: 'http://127.0.0.1:7890'})
-    if (response.ok) {
-        console.log(await response.json())
-    } else {
-        console.log(response)
-    }
-```
 

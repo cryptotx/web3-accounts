@@ -1,6 +1,6 @@
 import {APIConfig} from "./types";
 import QueryString from "querystring";
-import {checkURL, fetchJson} from "./hepler";
+import {checkURL, fetchJson} from "web3-wallets";
 
 export class BaseFetch {
     /**
@@ -45,7 +45,7 @@ export class BaseFetch {
     }
 
     async getURL(url: string, opts: RequestInit = {}, timeout?: number) {
-        const response = await fetchJson(url, {opts, timeout: timeout || this.apiTimeout, proxyUrl: this.proxyUrl})
+        const response = await fetchJson(url, {...opts, timeout: timeout || this.apiTimeout, proxyUrl: this.proxyUrl})
         return response.json()
     }
 
@@ -111,7 +111,7 @@ export class BaseFetch {
         const apiBase = this.apiBaseUrl
         const finalUrl = `${apiBase}${apiPath}`
 
-        return fetchJson(finalUrl, {opts, timeout: timeout || this.apiTimeout, proxyUrl: this.proxyUrl})
+        return fetchJson(finalUrl, {...opts, timeout: timeout || this.apiTimeout, proxyUrl: this.proxyUrl})
     }
 
     public throwOrContinue(error: Error, retries: number) {

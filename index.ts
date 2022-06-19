@@ -7,9 +7,6 @@ export {
     tokenToAsset,
     tokenToMetadata,
     transactionToCallData,
-    sleep,
-    fetchJson,
-    checkURL,
     ETHToken,
     NullToken
 } from './src/hepler'
@@ -35,10 +32,12 @@ export type {
     OrderOption,
     MatchOrdersParams,
     TokenSchemaNames,
-    ApproveInfo
+    ApproveInfo,
+    Bytes,
+    PopulatedTransaction
 } from './src/types'
 
-export {ElementSchemaName, OrderType, OfferType} from './src/types'
+export {ElementSchemaName, OrderSide, OfferType} from './src/types'
 
 
 
