@@ -96,7 +96,7 @@ export type MatchParams = {
     makerAddress?: string
     assetRecipientAddress?: string
     metadata?: string
-    standard?: string
+    protocol?: string
 }
 
 export interface CreateOrderParams {
@@ -107,7 +107,7 @@ export interface CreateOrderParams {
     expirationTime: number
     protocolFeePoints?: number
     protocolFeeAddress?: string
-    standard?: string
+    protocol?: string
     nonce?: number
     accountAddress?: string
 }
@@ -147,7 +147,7 @@ export interface SetOrderParams extends FeesInfo{
 }
 
 export interface LowerPriceOrderParams extends SetOrderParams{
-    standard: string
+    protocol: string
     paymentToken?: Token
     accountAddress?: string
 }
@@ -166,7 +166,7 @@ export interface MatchOrderOption extends MatchOption {
     metadata?: string
     takerAmount?: string
     taker?: string
-    standard?: string
+    protocol?: string
     sellTokenId?: string
 }
 
@@ -180,15 +180,15 @@ export interface MatchOrdersParams extends MatchOption {
 export interface ExchangetAgent extends EventEmitter {
     contracts: any
     walletInfo: WalletInfo
-    getAssetApprove: (metadatas: ExchangeMetadata[], decimals?: number) => Promise<{ isApprove: boolean, balances: string, calldata: LimitedCallSpec | undefined }[]>
-    getOrderApproveStep: (params: CreateOrderParams, side: OrderSide) => Promise<any>
+    // getRegisterProxy?: () => Promise<{ isRegister: boolean, accountProxy: string, calldata: LimitedCallSpec | undefined }>
+    // getAssetApprove: (metadatas: ExchangeMetadata[], decimals?: number) => Promise<{ isApprove: boolean, balances: string, calldata: LimitedCallSpec | undefined }[]>
+    getOrderApprove: (params: CreateOrderParams, side: OrderSide) => Promise<any>
     getMatchCallData: (params: MatchParams) => Promise<any>
     createSellOrder: (order: SellOrderParams) => Promise<any>
-    createLowerPriceOrder: (order: LowerPriceOrderParams) => Promise<any>
     createBuyOrder: (order: BuyOrderParams) => Promise<any>
     matchOrder: (order: string, option?: MatchOrderOption) => Promise<any>
     cancelOrders: (orders: string[]) => Promise<any>
-    getRegisterProxy?: () => Promise<{ isRegister: boolean, accountProxy: string, calldata: LimitedCallSpec | undefined }>
+    createLowerPriceOrder?: (order: LowerPriceOrderParams) => Promise<any>
     matchOrders?: (orders: MatchOrdersParams) => Promise<any>
     checkOrderMatch?: (order: string, params?: MatchParams) => Promise<any>
     checkOrderPost?: (order: string, params?: MatchParams) => Promise<any>
