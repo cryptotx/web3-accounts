@@ -1,5 +1,5 @@
-import {getChainRpcUrl} from "web3-wallets";
-import {fetchJson} from "../src/hepler";
+import {getChainRpcUrl,fetchJson} from "web3-wallets";
+
 
 
 const seller = '0x9F7A946d935c8Efc7A8329C0d894A69bA241345A';
