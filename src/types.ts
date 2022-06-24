@@ -140,13 +140,13 @@ export interface FeesInfo {
     protocolFeeAddress?: string
 }
 
-export interface SetOrderParams extends FeesInfo{
+export interface SetOrderParams extends FeesInfo {
     orderStr: string
     basePrice: string
     nonce?: number
 }
 
-export interface LowerPriceOrderParams extends SetOrderParams{
+export interface LowerPriceOrderParams extends SetOrderParams {
     protocol: string
     paymentToken?: Token
     accountAddress?: string
@@ -176,22 +176,23 @@ export interface MatchOrdersParams extends MatchOption {
     orderList: OrderOption []
 }
 
-
 export interface ExchangetAgent extends EventEmitter {
     contracts: any
     walletInfo: WalletInfo
-    // getRegisterProxy?: () => Promise<{ isRegister: boolean, accountProxy: string, calldata: LimitedCallSpec | undefined }>
-    // getAssetApprove: (metadatas: ExchangeMetadata[], decimals?: number) => Promise<{ isApprove: boolean, balances: string, calldata: LimitedCallSpec | undefined }[]>
-    getOrderApprove: (params: CreateOrderParams, side: OrderSide) => Promise<any>
+    getOrderApprove: (params: CreateOrderParams, side: OrderSide) => Promise<ApproveInfo>
     getMatchCallData: (params: MatchParams) => Promise<any>
     createSellOrder: (order: SellOrderParams) => Promise<any>
     createBuyOrder: (order: BuyOrderParams) => Promise<any>
-    matchOrder: (order: string, option?: MatchOrderOption) => Promise<any>
+    fulfillOrder: (order: string, option?: MatchOrderOption) => Promise<any>
+    fulfillOrders?: (orders: MatchOrdersParams) => Promise<any>
+    matchOrder?: (order: string, option?: MatchOrderOption) => Promise<any>
     cancelOrders: (orders: string[]) => Promise<any>
     createLowerPriceOrder?: (order: LowerPriceOrderParams) => Promise<any>
-    matchOrders?: (orders: MatchOrdersParams) => Promise<any>
+    // matchOrders?: (orders: MatchOrdersParams) => Promise<any>
     checkOrderMatch?: (order: string, params?: MatchParams) => Promise<any>
     checkOrderPost?: (order: string, params?: MatchParams) => Promise<any>
+    // getAssetApprove?: (metadatas: ExchangeMetadata[], decimals?: number) => Promise<{ isApprove: boolean, balances: string, calldata: LimitedCallSpec | undefined }[]>
+    // getRegisterProxy?: () => Promise<{ isRegister: boolean, accountProxy: string, calldata: LimitedCallSpec | undefined }>
 }
 
 

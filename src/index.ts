@@ -1,19 +1,17 @@
 import {ContractBase} from './contracts'
 import {ApproveInfo, Asset, ExchangeMetadata, Bytes} from "./types";
-
+import { _TypedDataEncoder } from "@ethersproject/hash";
 import {
     ethers, providers,
     EIP712TypedData,
     getProvider,
     LimitedCallSpec,
-    NULL_ADDRESS,
     WalletInfo,
-    ETH_TOKEN_ADDRESS,
     splitECSignature,
     getChainRpcUrl, hexUtils, ecSignHash, utils,
     ECSignature, privateKeysToAddress
 } from "web3-wallets";
-import {assetToMetadata, metadataToAsset, transactionToCallData} from "./hepler";
+import {assetToMetadata, isETHAddress, metadataToAsset, transactionToCallData} from "./hepler";
 
 export class Web3Accounts extends ContractBase {
     constructor(wallet: WalletInfo) {
@@ -81,14 +79,17 @@ export class Web3Accounts extends ContractBase {
         //     const walletSigner = new providers.Web3Provider(walletProvider).getSigner()
         //     signature = await walletSigner._signTypedData(typedData.domain, {Order: typedData.types.Order}, typedData.message)
         // }
-        signature = await (<any>walletSigner)._signTypedData(typedData.domain, types, typedData.message).catch((error: any) => {
+        const domain=typedData.domain
+        const value=typedData.message
+        const address = this.signerAddress.toLowerCase();
+        signature = await (<any>walletSigner)._signTypedData(domain, types, value).catch((error: any) => {
             this.emit('SignTypedData', error)
             throw error
         })
 
-        const pubAddress = utils.verifyTypedData(typedData.domain, types, typedData.message, signature)
-        const msg = `VerifyTypedData error ${pubAddress} ${this.walletInfo.address}`
-        console.assert(pubAddress.toLowerCase() == this.walletInfo.address.toLowerCase(), msg)
+        const pubAddress = utils.verifyTypedData(domain, types, value, signature)
+        const msg = `VerifyTypedData error ${pubAddress} ${address}`
+        console.assert(pubAddress.toLowerCase() == address, msg)
         return {
             signature,
             signatureVRS: splitECSignature(signature),
@@ -200,11 +201,9 @@ export class Web3Accounts extends ContractBase {
             }
             provider = new providers.JsonRpcProvider(rpc, network)
         }
-        if (tokenAddr
-            && utils.isAddress(tokenAddr)
-            && tokenAddr != NULL_ADDRESS
-            && tokenAddr.toLowerCase() != ETH_TOKEN_ADDRESS.toLowerCase()) {
-
+        if (isETHAddress(tokenAddr)) {
+            erc20Bal = await this.getGasBalances({address: account, rpcUrl})
+        } else {
             const erc20 = this.getContract(tokenAddr, this.erc20Abi)
             if (rpcUrl) {
                 // erc20Bal = await erc20.connect(provider).balanceOf(owner)
@@ -268,20 +267,30 @@ export class Web3Accounts extends ContractBase {
         return erc1155.isApprovedForAll(owner, operator)
     }
 
-    public async getAssetApprove(asset: Asset, operator: string, account?: string)
-        : Promise<ApproveInfo> {
+    public async getAssetApprove(asset: Asset, operator: string, account?: string): Promise<ApproveInfo> {
         const owner = account || this.signerAddress
         let isApprove = false, balances = '0', calldata
-        const tokenAddr = asset.tokenAddress
+        const address = asset.tokenAddress
+        if (!utils.isAddress(address)) throw new Error("The address format is incorrect")
         const tokenId = asset.tokenId || '0'
         if (asset.schemaName.toLowerCase() == 'erc721') {
-            isApprove = await this.getERC721Allowance(tokenAddr, operator, owner)
-            calldata = isApprove ? undefined : await this.approveERC721ProxyCalldata(tokenAddr, operator)
-            balances = await this.getERC721Balances(tokenAddr, tokenId, owner)
+            isApprove = await this.getERC721Allowance(address, operator, owner)
+            calldata = isApprove ? undefined : await this.approveERC721ProxyCalldata(address, operator)
+            balances = await this.getERC721Balances(address, tokenId, owner)
         } else if (asset.schemaName.toLowerCase() == 'erc1155') {
-            isApprove = await this.getERC1155Allowance(tokenAddr, operator, owner)
-            calldata = isApprove ? undefined : await this.approveERC1155ProxyCalldata(tokenAddr, operator)
-            balances = await this.getERC1155Balances(tokenAddr, tokenId, owner)
+            isApprove = await this.getERC1155Allowance(address, operator, owner)
+            calldata = isApprove ? undefined : await this.approveERC1155ProxyCalldata(address, operator)
+            balances = await this.getERC1155Balances(address, tokenId, owner)
+        } else if (asset.schemaName.toLowerCase() == 'erc20') {
+            if (isETHAddress(address)) {
+                isApprove = true
+                balances = await this.getGasBalances()
+            } else {
+                const allowance = await this.getERC20Allowance(address, operator, owner)
+                balances = await this.getERC20Balances(address, owner)
+                isApprove = ethers.BigNumber.from(allowance).gt(balances)
+                calldata = isApprove ? undefined : await this.approveERC20ProxyCalldata(address, operator)
+            }
         }
         return {
             isApprove,
@@ -293,34 +302,30 @@ export class Web3Accounts extends ContractBase {
     public async getTokenApprove(tokenAddr: string, spender: string, account?: string)
         : Promise<{ allowance: string, balances: string, calldata: LimitedCallSpec }> {
         const owner = account || this.signerAddress
-        if (utils.isAddress(tokenAddr)
-            && tokenAddr != NULL_ADDRESS
-            && tokenAddr.toLowerCase() != ETH_TOKEN_ADDRESS.toLowerCase()) {
-            const allowance = await this.getERC20Allowance(tokenAddr, spender, owner)
-            const balances = await this.getERC20Balances(tokenAddr, owner)
-            const calldata = await this.approveERC20ProxyCalldata(tokenAddr, spender)
-            return {
-                allowance,
-                balances,
-                calldata
-            }
-        } else {
-            throw new Error('User Account GetTokenApprove error')
+        if (isETHAddress(tokenAddr)) throw new Error('Token address means is ETH')
+        const allowance = await this.getERC20Allowance(tokenAddr, spender, owner)
+        const balances = await this.getERC20Balances(tokenAddr, owner)
+        const calldata = await this.approveERC20ProxyCalldata(tokenAddr, spender)
+        return {
+            allowance,
+            balances,
+            calldata
         }
-    }
 
+    }
 
     public async getAssetBalances(asset: Asset, account?: string) {
         const owner = account || this.signerAddress
         let balances = '0'
-        const tokenAddr = asset.tokenAddress
+        const address = asset.tokenAddress
+        if (isETHAddress(address)) return this.getGasBalances({address})
         const tokenId = asset.tokenId || '0'
         if (asset.schemaName.toLowerCase() == 'erc721') {
-            balances = await this.getERC721Balances(tokenAddr, tokenId, owner)
+            balances = await this.getERC721Balances(address, tokenId, owner)
         } else if (asset.schemaName.toLowerCase() == 'erc1155') {
-            balances = await this.getERC1155Balances(tokenAddr, tokenId, owner)
+            balances = await this.getERC1155Balances(address, tokenId, owner)
         } else if (asset.schemaName.toLowerCase() == 'erc20') {
-            balances = await this.getERC20Balances(tokenAddr, owner)
+            balances = await this.getERC20Balances(address, owner)
         }
         return balances
     }
@@ -340,7 +345,7 @@ export class Web3Accounts extends ContractBase {
         const decimals = token.decimals || 18
 
         const ethBal = !account ? "0" : await this.getGasBalances({address: account, rpcUrl})
-        const erc20Bal = !tokenAddr || tokenAddr == NULL_ADDRESS || tokenAddr.toLowerCase() == ETH_TOKEN_ADDRESS.toLowerCase() ? "0"
+        const erc20Bal = !tokenAddr || isETHAddress(tokenAddr) ? "0"
             : await this.getTokenBalances({
                 tokenAddr,
                 account,
@@ -386,7 +391,7 @@ export class Web3Accounts extends ContractBase {
             const decimals = token.decimals || 18
 
 
-            const erc20Bal = !tokenAddr || tokenAddr == NULL_ADDRESS || tokenAddr.toLowerCase() == ETH_TOKEN_ADDRESS.toLowerCase() ? "0"
+            const erc20Bal = !tokenAddr || isETHAddress(tokenAddr) ? "0"
                 : await this.getTokenBalances({
                     tokenAddr,
                     account,

@@ -1,5 +1,5 @@
 import {Asset, ExchangeMetadata, Token, PopulatedTransaction} from "./types";
-import {ETH_TOKEN_ADDRESS, LimitedCallSpec, NULL_ADDRESS} from "web3-wallets";
+import {ETH_TOKEN_ADDRESS, LimitedCallSpec, NULL_ADDRESS, utils} from "web3-wallets";
 
 
 export const ETHToken: Token = {
@@ -65,6 +65,11 @@ export function transactionToCallData(data: PopulatedTransaction): LimitedCallSp
         data: data.data,
         value: data.value
     } as LimitedCallSpec
+}
+
+export function isETHAddress(tokenAddress: string) {
+    if (!utils.isAddress(tokenAddress)) throw new Error("The address format is incorrect")
+    return (tokenAddress == NULL_ADDRESS || tokenAddress.toLowerCase() == ETH_TOKEN_ADDRESS.toLowerCase())
 }
 
 

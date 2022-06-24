@@ -8,7 +8,8 @@ export {
     tokenToMetadata,
     transactionToCallData,
     ETHToken,
-    NullToken
+    NullToken,
+    isETHAddress
 } from './src/hepler'
 
 

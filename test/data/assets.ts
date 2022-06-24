@@ -1,4 +1,4 @@
-
+import {ETH_TOKEN_ADDRESS} from "web3-wallets";
 
 export const CryptoKitties = {
     4: [{
@@ -121,6 +121,15 @@ export const asset1155 = {
         }]
 }
 
+export const erc20Asset = {
+    4: [{
+        tokenAddress: '0xb506bfaa7661dabf4de80672bd3f13f4610a5fdf',
+        schemaName: 'ERC20'
+    },{
+        tokenAddress: ETH_TOKEN_ADDRESS,
+        schemaName: 'ERC20'
+    }]
+}
 export const erc20Tokens = {
     4: [{
         name: 'TST',
