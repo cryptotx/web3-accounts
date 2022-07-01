@@ -1,6 +1,6 @@
 import EventEmitter from 'events'
 
-import { ContractABI} from "./abi";
+import {ContractABI} from "./abi";
 import {Token} from "../types";
 import {
     ethers, Signer, ContractInterface, Contract,
@@ -18,7 +18,7 @@ export interface ContractAddresses {
     GasWarpperToken: string
 }
 
-export const COMMON_CONTRACTS_ADDRESSES:{ [chainId: number]: ContractAddresses } = {
+export const COMMON_CONTRACTS_ADDRESSES: { [chainId: number]: ContractAddresses } = {
     1: {
         "GasWarpperToken": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
     },
@@ -55,8 +55,8 @@ export class ContractBase extends EventEmitter {
     public erc721Abi: ContractInterface
     public erc1155Abi: ContractInterface
     public contractAddresses: ContractAddresses
-    public GasWarpperToken: Token|undefined
-    public GasWarpperContract: Contract |undefined
+    public GasWarpperToken: Token | undefined
+    public GasWarpperContract: Contract | undefined
 
     constructor(wallet: WalletInfo) {
         super()
@@ -79,7 +79,7 @@ export class ContractBase extends EventEmitter {
         this.erc721Abi = ContractABI.erc721.abi
         this.erc1155Abi = ContractABI.erc1155.abi
         this.contractAddresses = COMMON_CONTRACTS_ADDRESSES[wallet.chainId]
-        if(this.contractAddresses){
+        if (this.contractAddresses) {
             this.GasWarpperContract = this.getContract(this.contractAddresses.GasWarpperToken, ContractABI.weth.abi)
             this.GasWarpperToken = {
                 name: 'GasWarpperToken',

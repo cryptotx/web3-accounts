@@ -16,7 +16,7 @@ const operator = '0x9F7A946d935c8Efc7A8329C0d894A69bA241345A';
     const msg = 'hello web3'
     const ecSign = user.ecSignMessage(msg)
     const sign = await user.signMessage(msg)
-    console.assert(joinECSignature(ecSign) == sign.signature)
+    console.assert(joinECSignature(ecSign) == sign)
 
 
 })()

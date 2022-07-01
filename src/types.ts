@@ -32,6 +32,13 @@ export enum ElementSchemaName {
     CryptoPunks = 'CryptoPunks'
 }
 
+export interface FeesInfo {
+    royaltyFeeAddress: string;
+    royaltyFeePoints: number;
+    protocolFeePoints?: number;
+    protocolFeeAddress?: string;
+}
+
 export interface Asset {
     // The asset's token ID, or null if ERC-20
     tokenId: string | undefined
@@ -45,7 +52,7 @@ export interface Asset {
     // Optional for fungible items
     decimals?: number
     chainId?: number
-    collection?: any
+    collection?: Partial<FeesInfo>
 }
 
 interface NFTAsset {
@@ -119,10 +126,6 @@ export interface SellOrderParams extends CreateOrderParams {
     englishAuctionReservePrice?: number
 }
 
-// export interface EnglishAuctionOrderParams extends CreateOrderParams {
-//     englishAuctionReservePrice?: number
-// }
-
 export enum OfferType {
     ItemOffer = 'item_offer',
     ContractOffer = 'contract_offer'
@@ -140,16 +143,27 @@ export interface FeesInfo {
     protocolFeeAddress?: string
 }
 
-export interface SetOrderParams extends FeesInfo {
+// export interface SetOrderParams extends FeesInfo {
+//     orderStr: string
+//     basePrice: string
+//     nonce?: number
+// }
+
+// export interface LowerPriceOrderParams extends SetOrderParams {
+//     protocol: string
+//     paymentToken?: Token
+//     accountAddress?: string
+// }
+
+export interface AdjustOrderParams extends FeesInfo {
     orderStr: string
     basePrice: string
-    nonce?: number
-}
-
-export interface LowerPriceOrderParams extends SetOrderParams {
-    protocol: string
+    protocol?: string
+    quantity?: number
+    expirationTime?: number
     paymentToken?: Token
-    accountAddress?: string
+    accountAddress?: string,
+    nonce?: number
 }
 
 export type ApproveInfo = {
@@ -183,16 +197,23 @@ export interface ExchangetAgent extends EventEmitter {
     getMatchCallData: (params: MatchParams) => Promise<any>
     createSellOrder: (order: SellOrderParams) => Promise<any>
     createBuyOrder: (order: BuyOrderParams) => Promise<any>
+    cancelOrders: (orders: string[]) => Promise<any>
     fulfillOrder: (order: string, option?: MatchOrderOption) => Promise<any>
     fulfillOrders?: (orders: MatchOrdersParams) => Promise<any>
-    matchOrder?: (order: string, option?: MatchOrderOption) => Promise<any>
-    cancelOrders: (orders: string[]) => Promise<any>
-    createLowerPriceOrder?: (order: LowerPriceOrderParams) => Promise<any>
-    // matchOrders?: (orders: MatchOrdersParams) => Promise<any>
+    adjustOrder?: (order: AdjustOrderParams) => Promise<any>
+    postOrder?: (orderStr: string) => Promise<any>
+    getAssetsFees?: (assets: string[]) => Promise<FeesInfo[]>
+    createLowerPriceOrder?: (order: AdjustOrderParams) => Promise<any>
     checkOrderMatch?: (order: string, params?: MatchParams) => Promise<any>
     checkOrderPost?: (order: string, params?: MatchParams) => Promise<any>
+    // matchOrder?: (order: string, option?: MatchOrderOption) => Promise<any>
+    // matchOrders?: (orders: MatchOrdersParams) => Promise<any>
     // getAssetApprove?: (metadatas: ExchangeMetadata[], decimals?: number) => Promise<{ isApprove: boolean, balances: string, calldata: LimitedCallSpec | undefined }[]>
     // getRegisterProxy?: () => Promise<{ isRegister: boolean, accountProxy: string, calldata: LimitedCallSpec | undefined }>
 }
 
+
+// export interface EnglishAuctionOrderParams extends CreateOrderParams {
+//     englishAuctionReservePrice?: number
+// }
 

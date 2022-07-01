@@ -1,6 +1,5 @@
 import {ContractBase} from './contracts'
 import {ApproveInfo, Asset, ExchangeMetadata, Bytes} from "./types";
-import { _TypedDataEncoder } from "@ethersproject/hash";
 import {
     ethers, providers,
     EIP712TypedData,
@@ -41,7 +40,7 @@ export class Web3Accounts extends ContractBase {
                 priKey = addr[this.walletInfo.address.toLowerCase()]
             }
         }
-        if (priKey == "") throw Error("Private key error")
+        if (!priKey) throw Error("Private key error")
         const signMsg = ecSignHash(hexUtils.hashMessage(message), priKey)
         return {
             r: signMsg.r,
