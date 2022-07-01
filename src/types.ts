@@ -198,6 +198,7 @@ export interface ExchangetAgent extends EventEmitter {
     createSellOrder: (order: SellOrderParams) => Promise<any>
     createBuyOrder: (order: BuyOrderParams) => Promise<any>
     cancelOrders: (orders: string[]) => Promise<any>
+    cancelAllOrders?: (nonce?: string) => Promise<any>
     fulfillOrder: (order: string, option?: MatchOrderOption) => Promise<any>
     fulfillOrders?: (orders: MatchOrdersParams) => Promise<any>
     adjustOrder?: (order: AdjustOrderParams) => Promise<any>
