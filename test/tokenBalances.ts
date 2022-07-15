@@ -1,16 +1,32 @@
 import { Web3Accounts} from "../index";
-import {getChainRpcUrl} from "web3-wallets";
+import {getChainRpcUrl, providers} from "web3-wallets";
 
 const buyer = '0x9F7A946d935c8Efc7A8329C0d894A69bA241345A';
 const seller = '0x0A56b3317eD60dC4E1027A63ffbE9df6fb102401';
 
 ;(async () => {
     try {
+
+
         const chainId = 4
         const sdk = new Web3Accounts({
             chainId,
             address: seller
         })
+
+       const oo= {
+            "account": "0x14d0a1877f2fe5761eb0f968384126091c40d53f",
+            "rpcUrl": "https://element-api.eossql.com/api/v1/jsonrpc"
+        }
+
+        const network = {
+            name:oo.account,
+            chainId: 4
+        }
+        const foo = new providers.JsonRpcProvider(oo.rpcUrl, network)
+
+        const userETHBal = await sdk.getUserTokenBalance(oo)
+        console.log('ETH', userETHBal)
 
         const userERC20s = await sdk.getUserTokensBalance({
             tokens: [
@@ -61,8 +77,7 @@ const seller = '0x0A56b3317eD60dC4E1027A63ffbE9df6fb102401';
         console.log(accountTokenBalD)
 
 
-        const userETHBal = await sdk.getUserTokenBalance({account: buyer})
-        console.log('ETH', userETHBal)
+
 
         const userERC20Bal = await sdk.getUserTokenBalance({
             tokenAddr: '0x44C73A7b3B286c78944aD79b2BBa0204916Cebca',
