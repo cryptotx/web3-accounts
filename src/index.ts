@@ -78,8 +78,8 @@ export class Web3Accounts extends ContractBase {
         //     const walletSigner = new providers.Web3Provider(walletProvider).getSigner()
         //     signature = await walletSigner._signTypedData(typedData.domain, {Order: typedData.types.Order}, typedData.message)
         // }
-        const domain=typedData.domain
-        const value=typedData.message
+        const domain = typedData.domain
+        const value = typedData.message
         const address = this.signerAddress.toLowerCase();
         signature = await (<any>walletSigner)._signTypedData(domain, types, value).catch((error: any) => {
             this.emit('SignTypedData', error)
@@ -454,17 +454,22 @@ export class Web3Accounts extends ContractBase {
         return this.assetTransfer(metadata, to)
     }
 
+    public async wethBalances(account?:string) {
+        if (!this.GasWarpperContract) throw new Error("Chain is not supported WETH")
+        const tokenAddr = this.GasWarpperContract.address
+        return this.getTokenBalances({tokenAddr,account})
+    }
 
-    public async wethWithdraw(ether: string) {
-        const wad = utils.parseEther(ether)
+    public async wethWithdraw(wad: string) {
+        // const wad = utils.parseEther(ether)
         const data = await this?.GasWarpperContract?.populateTransaction.withdraw(wad)
-        if (!data) throw new Error("Chain is not supported ")
+        if (!data) throw new Error("Chain is not supported WETH")
         return this.ethSend(transactionToCallData(data))
     }
 
-    public async wethDeposit(ether: string, depositFunc?: false) {
-        const wad = utils.parseEther(ether)
-        if (!this.GasWarpperContract) throw new Error("Chain is not supported ")
+    public async wethDeposit(wad: string, depositFunc?: false) {
+        // const wad = utils.parseEther(ether)
+        if (!this.GasWarpperContract) throw new Error("Chain is not supported WETH")
         let callData = {
             to: this.GasWarpperContract.address,
             value: wad.toString()

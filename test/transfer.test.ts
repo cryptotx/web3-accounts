@@ -1,5 +1,5 @@
 import {Asset, Web3Accounts} from "../index";
-// @ts-ignore
+
 import * as secrets from '../../../secrets.json'
 import {MockContract} from "../src/contracts/mockContract";
 
@@ -19,7 +19,7 @@ const operator = '0x9F7A946d935c8Efc7A8329C0d894A69bA241345A';
     if (!mock.Mock721 || !mock.Mock1155) throw 'Mock error'
     const mint721 = await mock.Mock721.mint()
     const mint721Tx = await mint721.wait()
-    console.log(mint721Tx.events[0].args.tokenId.toString())
+    console.log("tokenId:",mint721Tx.events[0].args.tokenId.toString())
 
     const erc721 = {
         tokenId: mint721Tx.events[0].args.tokenId.toString(),
@@ -41,6 +41,5 @@ const operator = '0x9F7A946d935c8Efc7A8329C0d894A69bA241345A';
 
     const tx = await user.transfer(erc1155, seller, 1)
     await tx.wait()
-
 
 })()
