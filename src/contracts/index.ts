@@ -78,7 +78,7 @@ export class ContractBase extends EventEmitter {
         this.walletInfo = {...wallet, chainId, address}
 
         this.chainId = chainId
-        this.signer = wallet.provider ? new Web3Provider(wallet.provider).getSigner() : walletSigner
+        this.signer = wallet.provider ? new Web3Provider(wallet.provider).getSigner(address) : walletSigner
         this.signerAddress = address
 
         this.erc20Abi = ContractABI.erc20.abi
