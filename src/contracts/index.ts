@@ -11,9 +11,10 @@ import {
     getChainInfo,
     getChainRpcUrl,
     getEstimateGas,
-    privateKeysToAddress
+    privateKeysToAddress,
+    Web3Provider,
+    JsonRpcSigner
 } from "web3-wallets";
-import {JsonRpcSigner} from "@ethersproject/providers";
 
 export interface ContractAddresses {
     GasWarpperToken: string
@@ -61,25 +62,29 @@ export class ContractBase extends EventEmitter {
 
     constructor(wallet: WalletInfo) {
         super()
+
+        const {walletSigner, address, chainId} = getProvider(wallet)
+
         wallet.rpcUrl = {
             ...wallet.rpcUrl,
-            url: wallet.rpcUrl?.url || getChainInfo(wallet.chainId).rpcs[0]
+            url: wallet.rpcUrl?.url || getChainInfo(chainId).rpcs[0]
         }
+
         const accounts = wallet?.privateKeys && privateKeysToAddress(wallet.privateKeys)
         if (accounts) {
-            if (!accounts[wallet.address.toLowerCase()]) throw 'PriKey error'
+            if (!accounts[address.toLowerCase()]) throw 'PriKey error'
         }
-        this.walletInfo = wallet
-        const {address, chainId, walletSigner} = getProvider(wallet)
+
+        this.walletInfo = {...wallet, chainId, address}
 
         this.chainId = chainId
-        this.signer = walletSigner
+        this.signer = wallet.provider ? new Web3Provider(wallet.provider).getSigner() : walletSigner
         this.signerAddress = address
 
         this.erc20Abi = ContractABI.erc20.abi
         this.erc721Abi = ContractABI.erc721.abi
         this.erc1155Abi = ContractABI.erc1155.abi
-        this.contractAddresses = COMMON_CONTRACTS_ADDRESSES[wallet.chainId]
+        this.contractAddresses = COMMON_CONTRACTS_ADDRESSES[chainId]
         if (this.contractAddresses) {
             this.GasWarpperContract = this.getContract(this.contractAddresses.GasWarpperToken, ContractABI.weth.abi)
             this.GasWarpperToken = {

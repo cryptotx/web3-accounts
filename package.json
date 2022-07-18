@@ -16,7 +16,7 @@
     "link": "sudo npm link web3-accounts"
   },
   "dependencies": {
-    "web3-wallets": "2.1.11"
+    "web3-wallets": "2.1.14"
   },
   "devDependencies": {
     "ts-node": "^10.9.1",
