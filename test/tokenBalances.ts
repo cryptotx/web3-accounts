@@ -1,26 +1,35 @@
-import { Web3Accounts} from "../index";
+import {Web3Accounts} from "../index";
 import {getChainRpcUrl, providers} from "web3-wallets";
 
 const buyer = '0x9F7A946d935c8Efc7A8329C0d894A69bA241345A';
-const seller = '0x0A56b3317eD60dC4E1027A63ffbE9df6fb102401';
+const seller = '0xeA199722372dea9DF458dbb56be7721af117a9Bc';
+import * as secrets from '../../../secrets.json'
 
-;(async () => {
+    ;
+
+(async () => {
     try {
 
 
         const chainId = 4
         const sdk = new Web3Accounts({
             chainId,
-            address: seller
+            address: seller,
+            privateKeys: secrets.privateKeys
         })
 
-       const oo= {
+        // const gasBal = await sdk.wethBalances()
+        const depositTx = await sdk.wethWithdraw("1")
+
+        const reciput = await  depositTx.wait()
+
+        const oo = {
             "account": "0x14d0a1877f2fe5761eb0f968384126091c40d53f",
             "rpcUrl": "https://element-api.eossql.com/api/v1/jsonrpc"
         }
 
         const network = {
-            name:oo.account,
+            name: oo.account,
             chainId: 4
         }
         const foo = new providers.JsonRpcProvider(oo.rpcUrl, network)
@@ -35,7 +44,7 @@ const seller = '0x0A56b3317eD60dC4E1027A63ffbE9df6fb102401';
                     decimals: 18
                 },
                 {
-                    tokenAddr:"0xb506bfaa7661dabf4de80672bd3f13f4610a5fdf",
+                    tokenAddr: "0xb506bfaa7661dabf4de80672bd3f13f4610a5fdf",
                     decimals: 18
                 }
             ]
@@ -58,7 +67,7 @@ const seller = '0x0A56b3317eD60dC4E1027A63ffbE9df6fb102401';
                     decimals: 18
                 },
                 {
-                    tokenAddr:"0xb506bfaa7661dabf4de80672bd3f13f4610a5fdf",
+                    tokenAddr: "0xb506bfaa7661dabf4de80672bd3f13f4610a5fdf",
                     decimals: 18
                 }
             ],
@@ -68,15 +77,11 @@ const seller = '0x0A56b3317eD60dC4E1027A63ffbE9df6fb102401';
         console.log('ETH+ERC20s', userETHERC20Bals)
 
 
-
-
         const ethBal = await sdk.getGasBalances()
         console.log(ethBal)
 
         const accountTokenBalD = await sdk.getUserTokenBalance({})
         console.log(accountTokenBalD)
-
-
 
 
         const userERC20Bal = await sdk.getUserTokenBalance({

@@ -213,7 +213,7 @@ export class Web3Accounts extends ContractBase {
                 erc20Bal = await erc20.balanceOf(owner)
             }
         }
-        return erc20Bal
+        return erc20Bal.toString()
     }
 
     public async getERC20Balances(erc20Addr: string, account?: string): Promise<string> {
@@ -454,10 +454,10 @@ export class Web3Accounts extends ContractBase {
         return this.assetTransfer(metadata, to)
     }
 
-    public async wethBalances(account?:string) {
+    public async wethBalances(account?: string) {
         if (!this.GasWarpperContract) throw new Error("Chain is not supported WETH")
         const tokenAddr = this.GasWarpperContract.address
-        return this.getTokenBalances({tokenAddr,account})
+        return this.getTokenBalances({tokenAddr, account})
     }
 
     public async wethWithdraw(wad: string) {
@@ -467,15 +467,17 @@ export class Web3Accounts extends ContractBase {
         return this.ethSend(transactionToCallData(data))
     }
 
-    public async wethDeposit(wad: string, depositFunc?: false) {
+    public async wethDeposit(wad: string, depositFunc?: boolean) {
         // const wad = utils.parseEther(ether)
         if (!this.GasWarpperContract) throw new Error("Chain is not supported WETH")
         let callData = {
+            from:this.walletInfo.address,
             to: this.GasWarpperContract.address,
-            value: wad.toString()
+            value: wad
         } as LimitedCallSpec
         if (depositFunc) {
-            callData = transactionToCallData(await this.GasWarpperContract.populateTransaction.deposit(wad))
+            const data = await this.GasWarpperContract.populateTransaction.deposit({value: wad})
+            callData = transactionToCallData(data)
         }
         return this.ethSend(callData)
     }

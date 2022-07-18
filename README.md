@@ -11,12 +11,14 @@ npm i web3-accounts
 
 ## Getting Started
  
+const privateKeys=[]
 
-```JavaScript 
+```ts 
 import { Web3Accounts} from "web3-accounts"; 
 const account = new Web3Accounts({
     chainId:1,
-    address: "0x548427d1418066763173dd053D9d1AE32D161310"
+    address: "0x548427d1418066763173dd053D9d1AE32D161310",
+    privateKeys: privateKeys,
 })
 const sign =await account.signMessage('Hello Web3')
 ```
@@ -129,14 +131,15 @@ async transfer(asset: Asset, to: string, quantity: number)
 
 ## Weth transfer between eth
 ```ts
+async wethBalances(account?: string)
+
 async wethWithdraw(ether: string)
 
 async wethDeposit(ether: string, depositFunc?: false)
 ```
 
 ```ts
-    const bal20 = await user.getERC20Balances(tokenAddr)
-    const wethBal = ethers.utils.formatUnits(bal20).toString()
+    const wethBal = await user.wethBalances() 
     const wethWithdrawTx = await user.wethWithdraw(wethBal)
     await wethWithdrawTx.wait()
 

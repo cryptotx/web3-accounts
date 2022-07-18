@@ -13,6 +13,7 @@ import {
     getEstimateGas,
     privateKeysToAddress
 } from "web3-wallets";
+import {JsonRpcSigner} from "@ethersproject/providers";
 
 export interface ContractAddresses {
     GasWarpperToken: string
@@ -47,7 +48,7 @@ export const COMMON_CONTRACTS_ADDRESSES: { [chainId: number]: ContractAddresses 
 
 export class ContractBase extends EventEmitter {
     public chainId: number
-    public readonly signer: Signer
+    public readonly signer: JsonRpcSigner
     public readonly signerAddress: string
 
     public walletInfo: WalletInfo
