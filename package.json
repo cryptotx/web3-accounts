@@ -1,6 +1,6 @@
 {
   "name": "web3-accounts",
-  "version": "1.2.15",
+  "version": "1.2.18",
   "description": "Javascript SDK for web3 accounts ",
   "main": "lib/index.js",
   "type": "lib/index.d.ts",
@@ -16,7 +16,7 @@
     "link": "sudo npm link web3-accounts"
   },
   "dependencies": {
-    "web3-wallets": "2.1.15"
+    "web3-wallets": "2.1.17"
   },
   "devDependencies": {
     "ts-node": "^10.9.1",

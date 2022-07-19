@@ -247,7 +247,7 @@ export class Web3Accounts extends ContractBase {
         return erc721.ownerOf(tokenId)
     }
 
-    public async getERC721Allowance(to: string, operator: string, account?: string): Promise<boolean> {
+    public async getERC721Approved(to: string, operator: string, account?: string): Promise<boolean> {
         const owner = account || this.signerAddress
         const erc721 = this.getContract(to, this.erc721Abi)
         return erc721.isApprovedForAll(owner, operator)
@@ -260,7 +260,7 @@ export class Web3Accounts extends ContractBase {
         return result.toString()
     }
 
-    public async getERC1155Allowance(to: string, operator: string, account?: string): Promise<boolean> {
+    public async getERC1155Approved(to: string, operator: string, account?: string): Promise<boolean> {
         const owner = account || this.signerAddress
         const erc1155 = this.getContract(to, this.erc1155Abi)
         return erc1155.isApprovedForAll(owner, operator)
@@ -273,11 +273,11 @@ export class Web3Accounts extends ContractBase {
         if (!utils.isAddress(address)) throw new Error("The address format is incorrect")
         const tokenId = asset.tokenId || '0'
         if (asset.schemaName.toLowerCase() == 'erc721') {
-            isApprove = await this.getERC721Allowance(address, operator, owner)
+            isApprove = await this.getERC721Approved(address, operator, owner)
             calldata = isApprove ? undefined : await this.approveERC721ProxyCalldata(address, operator)
             balances = await this.getERC721Balances(address, tokenId, owner)
         } else if (asset.schemaName.toLowerCase() == 'erc1155') {
-            isApprove = await this.getERC1155Allowance(address, operator, owner)
+            isApprove = await this.getERC1155Approved(address, operator, owner)
             calldata = isApprove ? undefined : await this.approveERC1155ProxyCalldata(address, operator)
             balances = await this.getERC1155Balances(address, tokenId, owner)
         } else if (asset.schemaName.toLowerCase() == 'erc20') {
