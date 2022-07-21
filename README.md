@@ -80,11 +80,11 @@ async getERC721Balances(to: string, tokenId: string, account?: string)
 
 async getERC721OwnerOf(to: string, tokenId: string)
 
-async getERC721Allowance(to: string, operator: string, account?: string)
+async getERC721Approved(to: string, operator: string, account?: string)
 
 async getERC1155Balances(to: string, tokenId: string, account?: string)
 
-async getERC1155Allowance(to: string, operator: string, account?: string)
+async getERC1155Approved(to: string, operator: string, account?: string)
 
 async getAssetApprove(asset: Asset, operator: string, account?: string)
 

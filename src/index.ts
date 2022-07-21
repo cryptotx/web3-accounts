@@ -274,12 +274,12 @@ export class Web3Accounts extends ContractBase {
         const tokenId = asset.tokenId || '0'
         if (asset.schemaName.toLowerCase() == 'erc721') {
             isApprove = await this.getERC721Approved(address, operator, owner)
-            calldata = isApprove ? undefined : await this.approveERC721ProxyCalldata(address, operator)
             balances = await this.getERC721Balances(address, tokenId, owner)
+            calldata = isApprove || balances == "0" ? undefined : await this.approveERC721ProxyCalldata(address, operator)
         } else if (asset.schemaName.toLowerCase() == 'erc1155') {
             isApprove = await this.getERC1155Approved(address, operator, owner)
-            calldata = isApprove ? undefined : await this.approveERC1155ProxyCalldata(address, operator)
             balances = await this.getERC1155Balances(address, tokenId, owner)
+            calldata = isApprove || balances == "0" ? undefined : await this.approveERC1155ProxyCalldata(address, operator)
         } else if (asset.schemaName.toLowerCase() == 'erc20') {
             if (isETHAddress(address)) {
                 isApprove = true
@@ -471,7 +471,7 @@ export class Web3Accounts extends ContractBase {
         // const wad = utils.parseEther(ether)
         if (!this.GasWarpperContract) throw new Error("Chain is not supported WETH")
         let callData = {
-            from:this.walletInfo.address,
+            from: this.walletInfo.address,
             to: this.GasWarpperContract.address,
             value: wad
         } as LimitedCallSpec
