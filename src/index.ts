@@ -288,7 +288,7 @@ export class Web3Accounts extends ContractBase {
                 const allowance = await this.getERC20Allowance(address, operator, owner)
                 balances = await this.getERC20Balances(address, owner)
                 isApprove = ethers.BigNumber.from(allowance).gt(balances)
-                calldata = isApprove ? undefined : await this.approveERC20ProxyCalldata(address, operator)
+                calldata = isApprove || balances == "0" ? undefined : await this.approveERC20ProxyCalldata(address, operator)
             }
         }
         return {
@@ -356,6 +356,44 @@ export class Web3Accounts extends ContractBase {
             erc20Bal: Number(erc20Bal),
             erc20Value: utils.formatUnits(erc20Bal, decimals)
         }
+    }
+
+    public async getTokensBalance(tokens:
+                                      {
+                                          token: string,
+                                          decimals: number
+                                      }[],
+                                  rpcUrl?: string
+    ): Promise<{
+        token: string
+        balance: string
+        value: string
+    }[]> {
+        // const {tokens, rpcUrl} = params
+        let promises: Promise<any>[] = []
+        for (const token of tokens) {
+            const tokenAddr = token.token || ""
+            if (isETHAddress(tokenAddr)) {
+                promises.push(this.getGasBalances({rpcUrl}))
+            } else {
+                promises.push(this.getTokenBalances({tokenAddr, rpcUrl}))
+            }
+        }
+        // const decimals = token.decimals || 18
+        // @ts-ignore
+        const bals = await Promise.allSettled(promises)
+
+        return tokens.map((val, index) => ({
+            token: val.token,
+            balance: utils.formatUnits(bals[index].value, val.decimals),
+            value: bals[index].value
+        }))
+
+        // return [{
+        //     balance: 1,
+        //     value: ""
+        // }]
+
     }
 
     public async getUserTokensBalance(params: {

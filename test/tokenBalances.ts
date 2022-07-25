@@ -1,5 +1,5 @@
-import {Web3Accounts} from "../index";
-import {getChainRpcUrl, providers} from "web3-wallets";
+import {NullToken, Web3Accounts} from "../index";
+import {getChainRpcUrl, NULL_ADDRESS, providers} from "web3-wallets";
 
 const buyer = '0x9F7A946d935c8Efc7A8329C0d894A69bA241345A';
 const seller = '0xeA199722372dea9DF458dbb56be7721af117a9Bc';
@@ -9,8 +9,6 @@ import * as secrets from '../../../secrets.json'
 
 (async () => {
     try {
-
-
         const chainId = 4
         const sdk = new Web3Accounts({
             chainId,
@@ -18,10 +16,30 @@ import * as secrets from '../../../secrets.json'
             privateKeys: secrets.privateKeys
         })
 
+
+        const tokenBals = await sdk.getTokensBalance([
+                {
+                    token: NULL_ADDRESS,
+                    decimals: 18
+                },
+                {
+                    token: '0x44C73A7b3B286c78944aD79b2BBa0204916Cebca',
+                    decimals: 18
+                },
+                {
+                    token: "0xb506bfaa7661dabf4de80672bd3f13f4610a5fdf",
+                    decimals: 18
+                }
+            ]
+        )
+
+        console.log(tokenBals)
+
+
         // const gasBal = await sdk.wethBalances()
         const depositTx = await sdk.wethWithdraw("1")
 
-        const reciput = await  depositTx.wait()
+        const reciput = await depositTx.wait()
 
         const oo = {
             "account": "0x14d0a1877f2fe5761eb0f968384126091c40d53f",
