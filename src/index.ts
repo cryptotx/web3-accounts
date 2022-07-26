@@ -8,11 +8,20 @@ import {
     WalletInfo,
     splitECSignature,
     getChainRpcUrl, hexUtils, ecSignHash, utils,
-    ECSignature, privateKeysToAddress
+    ECSignature, privateKeysToAddress, RpcInfo
 } from "web3-wallets";
 import {assetToMetadata, isETHAddress, metadataToAsset, transactionToCallData} from "./hepler";
+import pkg from "../package.json"
+import {BaseFetch} from "./baseFetch";
+
+const OpenSeaApiUrl = {
+    1: 'https://api.opensea.io',
+    4: 'https://testnets-api.opensea.io'
+}
 
 export class Web3Accounts extends ContractBase {
+    public version = pkg.version
+
     constructor(wallet: WalletInfo) {
         super(wallet)
     }
@@ -146,6 +155,19 @@ export class Web3Accounts extends ContractBase {
         return this.ethSend(callData)
     }
 
+    public async assetCancelApprove(asset: Asset, operator: string, allowance?: string) {
+        const tokenAddr = asset.tokenAddress
+        if (asset.schemaName.toLowerCase() == 'erc721') {
+            return this.cancelERC721Approve(tokenAddr, operator)
+        } else if (asset.schemaName.toLowerCase() == 'erc1155') {
+            return this.cancelErc1155Approve(tokenAddr, operator)
+        } else if (asset.schemaName.toLowerCase() == 'erc20') {
+            return this.cancelERC20Approve(tokenAddr, operator)
+        } else {
+            throw new Error('Asset approve error')
+        }
+    }
+
     public async assetApprove(asset: Asset, operator: string, allowance?: string) {
         const tokenAddr = asset.tokenAddress
         if (asset.schemaName.toLowerCase() == 'erc721') {
@@ -160,23 +182,26 @@ export class Web3Accounts extends ContractBase {
     }
 
     //-----------Get basic asset information-----------------
-    public async getGasBalances(account?: { address?: string, rpcUrl?: string }): Promise<string> {
-        const {address, rpcUrl} = account || {}
+    public async getGasBalances(account?: { address?: string, rpcUrl?: string, timeout?: number }): Promise<string> {
+        const {address, rpcUrl, timeout} = account || {}
         const owner = address || this.signerAddress
         let provider: any = this.signer
-        let rpc = rpcUrl || this.walletInfo.rpcUrl
         let ethBal = '0'
         if (rpcUrl) {
             const network = {
                 name: owner,
                 chainId: this.walletInfo.chainId
             }
-            provider = new providers.JsonRpcProvider(rpc, network)
+            provider = new providers.JsonRpcProvider({url: rpcUrl, timeout:6000}, network)
         }
         if (owner && ethers.utils.isAddress(owner)) {
             if (rpcUrl) {
                 // ethBal = (await provider.getBalance(this.walletInfo.address)).toString()
-                const ethStr = await provider.send('eth_getBalance', [owner, 'latest'])
+                console.log("66--")
+                const ethStr = await provider.send('eth_getBalance', [owner, 'latest']).catch(err => {
+                    throw err
+                })
+                console.log("66--2")
                 ethBal = parseInt(ethStr).toString()
             } else {
                 const ethStr = (await provider.provider.send('eth_getBalance', [owner, 'latest']))
@@ -187,18 +212,17 @@ export class Web3Accounts extends ContractBase {
         return ethBal
     }
 
-    public async getTokenBalances(params: { tokenAddr: string, account?: string, rpcUrl?: string }): Promise<string> {
-        const {tokenAddr, account, rpcUrl} = params
+    public async getTokenBalances(params: { tokenAddr: string, account?: string, rpcUrl?: string, timeout?: number }): Promise<string> {
+        const {tokenAddr, account, rpcUrl, timeout} = params
         const owner = account || this.signerAddress
         let provider: any = this.signer
         let erc20Bal = '0'
-        let rpc = rpcUrl || this.walletInfo.rpcUrl
         if (rpcUrl) {
             const network = {
                 name: owner,
                 chainId: this.walletInfo.chainId
             }
-            provider = new providers.JsonRpcProvider(rpc, network)
+            provider = new providers.JsonRpcProvider({url: rpcUrl, timeout: timeout || 6000}, network)
         }
         if (isETHAddress(tokenAddr)) {
             erc20Bal = await this.getGasBalances({address: account, rpcUrl})
@@ -363,13 +387,14 @@ export class Web3Accounts extends ContractBase {
                                           token: string,
                                           decimals: number
                                       }[],
-                                  rpcUrl?: string
+                                  rpcUrl?: string,
+                                  timeOut?: number
     ): Promise<{
         token: string
         balance: string
         value: string
+        status: string
     }[]> {
-        // const {tokens, rpcUrl} = params
         let promises: Promise<any>[] = []
         for (const token of tokens) {
             const tokenAddr = token.token || ""
@@ -386,14 +411,9 @@ export class Web3Accounts extends ContractBase {
         return tokens.map((val, index) => ({
             token: val.token,
             balance: utils.formatUnits(bals[index].value, val.decimals),
-            value: bals[index].value
+            value: bals[index].value,
+            status: bals[index].status
         }))
-
-        // return [{
-        //     balance: 1,
-        //     value: ""
-        // }]
-
     }
 
     public async getUserTokensBalance(params: {
@@ -502,7 +522,8 @@ export class Web3Accounts extends ContractBase {
         // const wad = utils.parseEther(ether)
         const data = await this?.GasWarpperContract?.populateTransaction.withdraw(wad)
         if (!data) throw new Error("Chain is not supported WETH")
-        return this.ethSend(transactionToCallData(data))
+        const calldata = transactionToCallData(data)
+        return this.ethSend(calldata)
     }
 
     public async wethDeposit(wad: string, depositFunc?: boolean) {
@@ -518,6 +539,37 @@ export class Web3Accounts extends ContractBase {
             callData = transactionToCallData(data)
         }
         return this.ethSend(callData)
+    }
+
+    public async getUserAssets(params: { account?: string, chainId?: number, limit?: number, orders?: boolean, proxyUrl?: string }) {
+        const {account, chainId, limit, orders, proxyUrl} = params
+        const baseUrl = OpenSeaApiUrl[chainId || this.walletInfo.chainId]
+        const fetch = new BaseFetch({apiBaseUrl: baseUrl, proxyUrl})
+        const query = {
+            include_orders: orders || false,
+            limit: limit || 10,
+            owner: account || this.walletInfo.address
+        }
+
+        try {
+            //https://testnets-api.opensea.io/api/v1/assets?include_orders=false&limit=1&owner=0x0A56b3317eD60dC4E1027A63ffbE9df6fb102401
+            // const url = `${baseUrl}${queryUrl}`
+            // console.log("getAssets", url)
+            const json = await fetch.get("/api/v1/assets", query)
+            return json.assets.map(val => ({
+                ...val.asset_contract,
+                royaltyFeePoints: Number(val.collection?.dev_seller_fee_basis_points),
+                protocolFeePoints: Number(val.collection?.opensea_seller_fee_basis_points),
+                royaltyFeeAddress: val.collection?.payout_address,
+                sell_orders: val.sell_orders,
+                token_id: val.token_id,
+                id: val.id,
+                supports_wyvern: val.supports_wyvern
+
+            }))
+        } catch (error) {
+            throw error
+        }
     }
 }
 

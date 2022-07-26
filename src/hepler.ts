@@ -37,6 +37,26 @@ export function metadataToAsset(metadata: ExchangeMetadata, data?: Asset): Asset
     }
 }
 
+export function openseaAssetToMeta(asset: any, quantity: string = "1", data?: string): ExchangeMetadata {
+    return <ExchangeMetadata>{
+        asset: {
+            id: asset.token_id,
+            address: asset.address,
+            quantity,
+            data
+        },
+        schema: asset.schema_name
+    }
+}
+
+export function openseaAssetToAsset(asset: any): Asset {
+    return <Asset>{
+        tokenId: asset.token_id,
+        tokenAddress: asset.address,
+        schemaName: asset.schema_name
+    }
+}
+
 export function tokenToAsset(token: Token): Asset {
     return <Asset>{
         tokenId: undefined,

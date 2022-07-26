@@ -7,6 +7,8 @@ export {
     tokenToAsset,
     tokenToMetadata,
     transactionToCallData,
+    openseaAssetToMeta,
+    openseaAssetToAsset,
     ETHToken,
     NullToken,
     isETHAddress

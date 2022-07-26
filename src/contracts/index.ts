@@ -105,7 +105,7 @@ export class ContractBase extends EventEmitter {
     }
 
     async estimateGas(callData: LimitedCallSpec) {
-        const rpcUrl = this.walletInfo.rpcUrl?.url || await getChainRpcUrl(this.walletInfo.chainId)
+        const rpcUrl = this.walletInfo.rpcUrl?.url || await getChainRpcUrl(this.chainId)
         return getEstimateGas(rpcUrl, callData)
     }
 }
