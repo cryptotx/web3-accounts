@@ -1,13 +1,13 @@
 {
   "files": {
     "main.css": "/web3-accounts/static/css/main.863cce4d.css",
-    "main.js": "/web3-accounts/static/js/main.e7953730.js",
+    "main.js": "/web3-accounts/static/js/main.e20e7584.js",
     "static/media/metamask.png": "/web3-accounts/static/media/metamask.c6e8e59392f8bfc48238.png",
     "index.html": "/web3-accounts/index.html",
     "static/media/coinbaseWallet.svg": "/web3-accounts/static/media/coinbaseWallet.0a0007e4bb4981fa8f155b9fd1724092.svg"
   },
   "entrypoints": [
     "static/css/main.863cce4d.css",
-    "static/js/main.e7953730.js"
+    "static/js/main.e20e7584.js"
   ]
 }
