@@ -124,6 +124,7 @@ export interface SellOrderParams extends CreateOrderParams {
     endAmount?: number
     buyerAddress?: string
     englishAuctionReservePrice?: number
+    isCheckOrderApporve?:boolean
 }
 
 export enum OfferType {

@@ -192,16 +192,14 @@ export class Web3Accounts extends ContractBase {
                 name: owner,
                 chainId: this.walletInfo.chainId
             }
-            provider = new providers.JsonRpcProvider({url: rpcUrl, timeout:6000}, network)
+            provider = new providers.JsonRpcProvider({url: rpcUrl, timeout:10000}, network)
         }
         if (owner && ethers.utils.isAddress(owner)) {
             if (rpcUrl) {
                 // ethBal = (await provider.getBalance(this.walletInfo.address)).toString()
-                console.log("66--")
                 const ethStr = await provider.send('eth_getBalance', [owner, 'latest']).catch(err => {
                     throw err
                 })
-                console.log("66--2")
                 ethBal = parseInt(ethStr).toString()
             } else {
                 const ethStr = (await provider.provider.send('eth_getBalance', [owner, 'latest']))
@@ -222,7 +220,7 @@ export class Web3Accounts extends ContractBase {
                 name: owner,
                 chainId: this.walletInfo.chainId
             }
-            provider = new providers.JsonRpcProvider({url: rpcUrl, timeout: timeout || 6000}, network)
+            provider = new providers.JsonRpcProvider({url: rpcUrl, timeout: timeout || 10000}, network)
         }
         if (isETHAddress(tokenAddr)) {
             erc20Bal = await this.getGasBalances({address: account, rpcUrl})
@@ -357,23 +355,25 @@ export class Web3Accounts extends ContractBase {
         tokenAddr?: string,
         decimals?: number,
         account?: string,
-        rpcUrl?: string
+        rpcUrl?: string,
+        timeout?:number
     }): Promise<{
         ethBal: number
         ethValue: string
         erc20Bal: number
         erc20Value: string
     }> {
-        const {tokenAddr, account, rpcUrl} = token
+        const {tokenAddr, account, rpcUrl,timeout} = token
         const decimals = token.decimals || 18
 
-        const ethBal = !account ? "0" : await this.getGasBalances({address: account, rpcUrl})
+        const ethBal = !account ? "0" : await this.getGasBalances({address: account, rpcUrl,timeout}).catch(e=>{throw e})
         const erc20Bal = !tokenAddr || isETHAddress(tokenAddr) ? "0"
             : await this.getTokenBalances({
                 tokenAddr,
                 account,
-                rpcUrl
-            })
+                rpcUrl,
+                timeout
+            }).catch(e=>{throw e})
         return {
             ethBal: Number(ethBal),
             ethValue: utils.formatEther(ethBal),
@@ -408,9 +408,10 @@ export class Web3Accounts extends ContractBase {
         // @ts-ignore
         const bals = await Promise.allSettled(promises)
 
+
         return tokens.map((val, index) => ({
-            token: val.token,
-            balance: utils.formatUnits(bals[index].value, val.decimals),
+            token: val.token,// @ts-ignore
+            balance: utils.formatUnits(bals[index].value, val.decimals),// @ts-ignore
             value: bals[index].value,
             status: bals[index].status
         }))
