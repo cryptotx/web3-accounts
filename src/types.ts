@@ -116,7 +116,8 @@ export interface CreateOrderParams {
     protocolFeeAddress?: string
     protocol?: string
     nonce?: number
-    accountAddress?: string
+    accountAddress?: string,
+    isCheckOrderApporve?: boolean
 }
 
 export interface SellOrderParams extends CreateOrderParams {
@@ -124,7 +125,6 @@ export interface SellOrderParams extends CreateOrderParams {
     endAmount?: number
     buyerAddress?: string
     englishAuctionReservePrice?: number
-    isCheckOrderApporve?:boolean
 }
 
 export enum OfferType {
@@ -218,4 +218,12 @@ export interface ExchangetAgent extends EventEmitter {
 // export interface EnglishAuctionOrderParams extends CreateOrderParams {
 //     englishAuctionReservePrice?: number
 // }
+
+export interface AssetCheckInfo {
+    itemType: number
+    allowance: string
+    balance: string
+    erc721Owner: string
+    erc721ApprovedAccount: string
+}
 

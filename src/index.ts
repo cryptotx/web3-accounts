@@ -1,5 +1,5 @@
 import {ContractBase} from './contracts'
-import {ApproveInfo, Asset, ExchangeMetadata, Bytes} from "./types";
+import {ApproveInfo, Asset, ExchangeMetadata, Bytes, AssetCheckInfo} from "./types";
 import {
     ethers, providers,
     EIP712TypedData,
@@ -192,7 +192,7 @@ export class Web3Accounts extends ContractBase {
                 name: owner,
                 chainId: this.walletInfo.chainId
             }
-            provider = new providers.JsonRpcProvider({url: rpcUrl, timeout:10000}, network)
+            provider = new providers.JsonRpcProvider({url: rpcUrl, timeout: 10000}, network)
         }
         if (owner && ethers.utils.isAddress(owner)) {
             if (rpcUrl) {
@@ -356,24 +356,28 @@ export class Web3Accounts extends ContractBase {
         decimals?: number,
         account?: string,
         rpcUrl?: string,
-        timeout?:number
+        timeout?: number
     }): Promise<{
         ethBal: number
         ethValue: string
         erc20Bal: number
         erc20Value: string
     }> {
-        const {tokenAddr, account, rpcUrl,timeout} = token
+        const {tokenAddr, account, rpcUrl, timeout} = token
         const decimals = token.decimals || 18
 
-        const ethBal = !account ? "0" : await this.getGasBalances({address: account, rpcUrl,timeout}).catch(e=>{throw e})
+        const ethBal = !account ? "0" : await this.getGasBalances({address: account, rpcUrl, timeout}).catch(e => {
+            throw e
+        })
         const erc20Bal = !tokenAddr || isETHAddress(tokenAddr) ? "0"
             : await this.getTokenBalances({
                 tokenAddr,
                 account,
                 rpcUrl,
                 timeout
-            }).catch(e=>{throw e})
+            }).catch(e => {
+                throw e
+            })
         return {
             ethBal: Number(ethBal),
             ethValue: utils.formatEther(ethBal),
@@ -542,6 +546,43 @@ export class Web3Accounts extends ContractBase {
         return this.ethSend(callData)
     }
 
+    public async getAssetsApprove(assets: Asset[], operator: string, account?: string) {
+        const owner = account || this.signerAddress
+        const apprves: ApproveInfo[] = []
+        for (const asset of assets) {
+            let isApprove = false, balances = '0', calldata
+            const address = asset.tokenAddress
+            if (!utils.isAddress(address)) throw new Error("The address format is incorrect")
+            const tokenId = asset.tokenId || '0'
+            if (asset.schemaName.toLowerCase() == 'erc721') {
+                isApprove = await this.getERC721Approved(address, operator, owner)
+                balances = await this.getERC721Balances(address, tokenId, owner)
+                calldata = isApprove || balances == "0" ? undefined : await this.approveERC721ProxyCalldata(address, operator)
+            } else if (asset.schemaName.toLowerCase() == 'erc1155') {
+                isApprove = await this.getERC1155Approved(address, operator, owner)
+                balances = await this.getERC1155Balances(address, tokenId, owner)
+                calldata = isApprove || balances == "0" ? undefined : await this.approveERC1155ProxyCalldata(address, operator)
+            } else if (asset.schemaName.toLowerCase() == 'erc20') {
+                if (isETHAddress(address)) {
+                    isApprove = true
+                    balances = await this.getGasBalances()
+                } else {
+                    const allowance = await this.getERC20Allowance(address, operator, owner)
+                    balances = await this.getERC20Balances(address, owner)
+                    isApprove = ethers.BigNumber.from(allowance).gt(balances)
+                    calldata = isApprove || balances == "0" ? undefined : await this.approveERC20ProxyCalldata(address, operator)
+                }
+            }
+            apprves.push({
+                isApprove,
+                balances,
+                calldata
+            })
+        }
+
+        return apprves
+    }
+
     public async getUserAssets(params: { account?: string, chainId?: number, limit?: number, orders?: boolean, proxyUrl?: string }) {
         const {account, chainId, limit, orders, proxyUrl} = params
         const baseUrl = OpenSeaApiUrl[chainId || this.walletInfo.chainId]
@@ -555,7 +596,6 @@ export class Web3Accounts extends ContractBase {
         try {
             //https://testnets-api.opensea.io/api/v1/assets?include_orders=false&limit=1&owner=0x0A56b3317eD60dC4E1027A63ffbE9df6fb102401
             // const url = `${baseUrl}${queryUrl}`
-            // console.log("getAssets", url)
             const json = await fetch.get("/api/v1/assets", query)
             return json.assets.map(val => ({
                 ...val.asset_contract,
@@ -566,11 +606,59 @@ export class Web3Accounts extends ContractBase {
                 token_id: val.token_id,
                 id: val.id,
                 supports_wyvern: val.supports_wyvern
-
             }))
         } catch (error) {
             throw error
         }
+    }
+
+    public async getUserAssetsApprove(assets: Asset[], operator: string, account?: string) {
+        const owner = account || this.signerAddress
+        const tokens: string[] = []
+        const tokenIds: string[] = []
+        for (const asset of assets) {
+            const address = asset.tokenAddress
+            if (!utils.isAddress(address)) throw new Error("The address format is incorrect")
+            tokens.push(address)
+            const tokenId = asset.tokenId || '0'
+            tokenIds.push(tokenId)
+        }
+        const checkInfo: AssetCheckInfo[] = await this.HelperContract?.checkAssets(owner, operator, tokens, tokenIds)
+        const approves: any[] = []
+        for (let i = 0; i < assets.length; i++) {
+            const asset = assets[i]
+            const address = asset.tokenAddress
+            const approveInfo = checkInfo[i]
+            let isApprove = false, balances = '0', calldata
+            if (asset.schemaName.toLowerCase() == 'erc721' && approveInfo.itemType == 0) {
+                balances = approveInfo.balance.toString()
+                isApprove = approveInfo.allowance.toString() == "1"
+                calldata = isApprove || balances == "0" ? undefined : await this.approveERC721ProxyCalldata(address, operator)
+            } else if (asset.schemaName.toLowerCase() == 'erc1155' && approveInfo.itemType == 1) {
+                balances = approveInfo.balance.toString()
+                isApprove = approveInfo.allowance.toString() == "1"
+                calldata = isApprove || balances == "0" ? undefined : await this.approveERC1155ProxyCalldata(address, operator)
+            } else if (asset.schemaName.toLowerCase() == 'erc20' && approveInfo.itemType == 2) {
+                if (isETHAddress(address)) {
+                    isApprove = true
+                    balances = await this.getGasBalances()
+                } else {
+                    const allowance = approveInfo.allowance.toString()
+                    balances = approveInfo.balance.toString()
+                    isApprove = ethers.BigNumber.from(allowance).gt(balances)
+                    calldata = isApprove || balances == "0" ? undefined : await this.approveERC20ProxyCalldata(address, operator)
+                }
+            }
+            if (approves.find(val => val.token == address)) continue
+            approves.push({
+                token: address,
+                tokenId: asset.tokenId || "",
+                isApprove,
+                balances,
+                calldata
+            })
+        }
+        return approves
     }
 }
 

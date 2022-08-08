@@ -18,14 +18,17 @@ import {
 
 export interface ContractAddresses {
     GasWarpperToken: string
+    Helper?: string
 }
 
 export const COMMON_CONTRACTS_ADDRESSES: { [chainId: number]: ContractAddresses } = {
     1: {
         "GasWarpperToken": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
+        "Helper": "0x68dc8D3ab93220e84b9923706B3DDc926C77f1Df"
     },
     4: {
-        'GasWarpperToken': '0xc778417e063141139fce010982780140aa0cd5ab'
+        'GasWarpperToken': '0xc778417e063141139fce010982780140aa0cd5ab',
+        "Helper": "0x3EA9c0104e3D218F003C74FD9Fe5fB4e883EF7DE"
     },
     56: {
         'GasWarpperToken': '0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c'
@@ -59,6 +62,7 @@ export class ContractBase extends EventEmitter {
     public contractAddresses: ContractAddresses
     public GasWarpperToken: Token | undefined
     public GasWarpperContract: Contract | undefined
+    public HelperContract: Contract | undefined
 
     constructor(wallet: WalletInfo) {
         super()
@@ -93,7 +97,11 @@ export class ContractBase extends EventEmitter {
                 address: this.contractAddresses.GasWarpperToken,
                 decimals: 18
             }
+            if (this.contractAddresses.Helper) {
+                this.HelperContract = this.getContract(this.contractAddresses.Helper, ContractABI.helper.abi)
+            }
         }
+
     }
 
     getContract(contractAddresses: string, abi: ContractInterface): Contract {
