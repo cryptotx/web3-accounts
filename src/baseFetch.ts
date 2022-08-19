@@ -1,6 +1,7 @@
 import {APIConfig} from "./types";
 import QueryString from "querystring";
-import {checkURL, fetchJson} from "web3-wallets";
+import {checkURL} from "web3-wallets";
+import {fetchJson} from "./hepler";
 
 export class BaseFetch {
     /**

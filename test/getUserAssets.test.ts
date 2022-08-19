@@ -11,15 +11,15 @@ const operator = '0x8D6022B8A421B08E9E4cEf45E46f1c83C85d402F';
     const chainId = 4
     const wallet = {
         chainId,
-        address: seller,
-        privateKeys: secrets.privateKeys,
+        address: seller
     }
     const user = new Web3Accounts(wallet)
     //
-    // const openseaAssets =await user.getUserAssets({proxyUrl:"http://127.0.0.1:7890",limit:5})
-    // console.log(openseaAssets)
-    const assets =  openseaAssets.map(val=>openseaAssetToAsset(val))
-    const approve =await user.getUserAssetsApprove(assets,operator)
-    console.log(approve)
+    const openseaAssets =await user.getUserAssets({proxyUrl:"http://127.0.0.1:7890",limit:1})
+    console.log(openseaAssets)
+    // const assets =  openseaAssets.map(val=>openseaAssetToAsset(val))
+    // const approve =await user.getUserAssetsApprove(assets,operator)
+    // console.log(approve)
 
 })()
+// export https_proxy=http://127.0.0.1:7890 http_proxy=http://127.0.0.1:7890 all_proxy=socks5://127.0.0.1:7890

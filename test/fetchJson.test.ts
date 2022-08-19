@@ -1,4 +1,5 @@
-import {getChainRpcUrl,fetchJson} from "web3-wallets";
+import {getChainRpcUrl} from "web3-wallets";
+import {fetchJson} from "../src/hepler";
 
 
 

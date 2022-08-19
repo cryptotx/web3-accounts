@@ -408,7 +408,6 @@ export class Web3Accounts extends ContractBase {
                 promises.push(this.getTokenBalances({tokenAddr, rpcUrl}))
             }
         }
-        // const decimals = token.decimals || 18
         // @ts-ignore
         const bals = await Promise.allSettled(promises)
 
@@ -583,19 +582,19 @@ export class Web3Accounts extends ContractBase {
         return apprves
     }
 
-    public async getUserAssets(params: { account?: string, chainId?: number, limit?: number, orders?: boolean, proxyUrl?: string }) {
-        const {account, chainId, limit, orders, proxyUrl} = params
+    public async getUserAssets(params: { account?: string, chainId?: number, offset?: number, limit?: number, orders?: boolean, proxyUrl?: string }) {
+        const {account, chainId, offset, limit, orders, proxyUrl} = params
         const baseUrl = OpenSeaApiUrl[chainId || this.walletInfo.chainId]
         const fetch = new BaseFetch({apiBaseUrl: baseUrl, proxyUrl})
         const query = {
             include_orders: orders || false,
             limit: limit || 10,
+            offset: offset || 0,
             owner: account || this.walletInfo.address
         }
 
         try {
-            //https://testnets-api.opensea.io/api/v1/assets?include_orders=false&limit=1&owner=0x0A56b3317eD60dC4E1027A63ffbE9df6fb102401
-            // const url = `${baseUrl}${queryUrl}`
+            // https://testnets-api.opensea.io/api/v1/assets?include_orders=false&limit=1&owner=0x0A56b3317eD60dC4E1027A63ffbE9df6fb102401
             const json = await fetch.get("/api/v1/assets", query)
             return json.assets.map(val => ({
                 ...val.asset_contract,
@@ -604,8 +603,7 @@ export class Web3Accounts extends ContractBase {
                 royaltyFeeAddress: val.collection?.payout_address,
                 sell_orders: val.sell_orders,
                 token_id: val.token_id,
-                id: val.id,
-                supports_wyvern: val.supports_wyvern
+                id: val.id
             }))
         } catch (error) {
             throw error

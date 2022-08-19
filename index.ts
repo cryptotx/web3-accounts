@@ -11,8 +11,11 @@ export {
     openseaAssetToAsset,
     ETHToken,
     NullToken,
-    isETHAddress
+    isETHAddress,
+
 } from './src/hepler'
+
+export {getTransactionReceipt, getBlockByNumber, getTransactionByHash} from "./src/rpc"
 
 
 export type {
