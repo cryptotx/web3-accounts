@@ -144,18 +144,6 @@ export interface FeesInfo {
     protocolFeeAddress?: string
 }
 
-// export interface SetOrderParams extends FeesInfo {
-//     orderStr: string
-//     basePrice: string
-//     nonce?: number
-// }
-
-// export interface LowerPriceOrderParams extends SetOrderParams {
-//     protocol: string
-//     paymentToken?: Token
-//     accountAddress?: string
-// }
-
 export interface AdjustOrderParams extends FeesInfo {
     orderStr: string
     basePrice: string

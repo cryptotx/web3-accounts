@@ -1,4 +1,5 @@
 export {Web3Accounts} from "./src"
+export {ContractBase} from "./src/contracts"
 export {BaseFetch} from "./src/baseFetch"
 export {MockContract} from "./src/contracts/mockContract"
 export {
@@ -12,7 +13,7 @@ export {
     ETHToken,
     NullToken,
     isETHAddress,
-
+    toFixed
 } from './src/hepler'
 
 export {getTransactionReceipt, getBlockByNumber, getTransactionByHash} from "./src/rpc"
