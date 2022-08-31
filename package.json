@@ -1,6 +1,6 @@
 {
   "name": "web3-accounts",
-  "version": "1.3.3",
+  "version": "1.3.8",
   "description": "Javascript SDK for web3 accounts ",
   "main": "lib/index.js",
   "type": "lib/index.d.ts",
@@ -13,7 +13,7 @@
   },
   "dependencies": {
     "https-proxy-agent": "^5.0.1",
-    "web3-wallets": "2.3.11"
+    "web3-wallets": "^2.3.13"
   },
   "devDependencies": {
     "typescript": "4.7.4"

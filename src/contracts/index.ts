@@ -31,22 +31,28 @@ export const COMMON_CONTRACTS_ADDRESSES: { [chainId: number]: ContractAddresses 
         "Helper": "0x3EA9c0104e3D218F003C74FD9Fe5fB4e883EF7DE"
     },
     56: {
-        'GasWarpperToken': '0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c'
+        'GasWarpperToken': '0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c',
+        "Helper":"0xb54ee46dACE4ecAC1dBC2488B61094B4b3174139"
     },
     97: {
-        "GasWarpperToken": '0xae13d989daC2f0dEbFf460aC112a837C89BAa7cd'
+        "GasWarpperToken": '0xae13d989daC2f0dEbFf460aC112a837C89BAa7cd',
+        "Helper":"0x61311202273f9857685852FC76aEA83294F90a80"
     },
     137: {
-        'GasWarpperToken': '0x0d500b1d8e8ef31e21c99d1db9a6444d3adf1270'
+        'GasWarpperToken': '0x0d500b1d8e8ef31e21c99d1db9a6444d3adf1270',
+        "Helper":"0x4D5E03AF11d7976a0494f0ff2F65986d6548fc3e"
     },
     80001: {
-        'GasWarpperToken': '0x9c3C9283D3e44854697Cd22D3Faa240Cfb032889'
+        'GasWarpperToken': '0x9c3C9283D3e44854697Cd22D3Faa240Cfb032889',
+        "Helper":"0xcCcd0afEAfB6625cd655Cf8f39B02c85947dB6f6"
     },
     43114: {
-        'GasWarpperToken': '0xd00ae08403B9bbb9124bB305C09058E32C39A48c'
+        'GasWarpperToken': '0xd00ae08403B9bbb9124bB305C09058E32C39A48c',
+        "Helper":"0x4c95419b74D420841CaaAd6345799522475f91D2"
     },
     43113: {
-        'GasWarpperToken': '0xb31f66aa3c1e785363f0875a1b74e27b85fd66c7'
+        'GasWarpperToken': '0xb31f66aa3c1e785363f0875a1b74e27b85fd66c7',
+        "Helper":"0x1f66918D87aab33158DBA4b5Dfe73f2245cfDc20f"
     }
 }
 

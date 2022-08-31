@@ -40,13 +40,13 @@ export interface FeesInfo {
 }
 
 export interface Asset {
-    // The asset's token ID, or null if ERC-20
-    tokenId: string | undefined
     // The asset's contract address
     tokenAddress: string
     // The Element schema name (e.g. "ERC721") for this asset
     schemaName: string
     // Optional for ENS names
+    // The asset's token ID, or null if ERC-20
+    tokenId?: string
     name?: string
     data?: string
     // Optional for fungible items
