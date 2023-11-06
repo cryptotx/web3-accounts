@@ -7,7 +7,7 @@ import {
     LimitedCallSpec,
     WalletInfo,
     splitECSignature,
-    getChainRpcUrl, hexUtils, ecSignHash, utils,
+    getChainRpcUrl, hexUtils, ecSignHash,
     ECSignature, privateKeysToAddress, RpcInfo
 } from "web3-wallets";
 import {assetToMetadata, isETHAddress, metadataToAsset, transactionToCallData} from "./hepler";
@@ -60,8 +60,8 @@ export class Web3Accounts extends ContractBase {
 
     public async signMessage(message: string | Bytes): Promise<string> {
         const {walletSigner} = getProvider(this.walletInfo)
-        if (utils.isHexString(message)) {
-            message = utils.arrayify(message)
+        if (ethers.isHexString(message)) {
+            message = ethers.arrayify(message)
         }
         const signature = await walletSigner.signMessage(message).catch((error: any) => {
             this.emit('SignMessage', error)
@@ -69,7 +69,7 @@ export class Web3Accounts extends ContractBase {
         })
 
         if (typeof signature != 'string') throw new Error("SignMessage error")
-        const pubAddress = utils.verifyMessage(message, signature)
+        const pubAddress = ethers.verifyMessage(message, signature)
         console.assert(pubAddress.toLowerCase() == this.walletInfo.address.toLowerCase(), 'Sign message error')
         return signature
     }

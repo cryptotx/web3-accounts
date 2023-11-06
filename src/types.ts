@@ -7,7 +7,7 @@ export type {TokenSchemaNames} from "web3-wallets"
 
 export type {Bytes} from "@ethersproject/bytes";
 
-export type {PopulatedTransaction} from "@ethersproject/contracts";
+// export type {PopulatedTransaction} from "@ethersproject/contracts";
 
 export interface APIConfig {
     chainId?: number

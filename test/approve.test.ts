@@ -13,10 +13,14 @@ const operator = '0x9F7A946d935c8Efc7A8329C0d894A69bA241345A';
     const erc20 = erc20Asset[chainId][1] as Asset
     const user = new Web3Accounts({
         chainId,
-        address: seller,
-        privateKeys: secrets.privateKeys,
+        address: seller
 
     })
+
+    const wethBalance = await user.wethBalances()
+
+    console.log(wethBalance)
+
     const approve20 = await user.getAssetApprove(erc20,operator)
 
     const approve721 = await user.getAssetApprove(erc721,operator)

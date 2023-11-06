@@ -1,7 +1,6 @@
-import {Asset, ExchangeMetadata, Token, PopulatedTransaction} from "./types";
-import {checkURL, ETH_TOKEN_ADDRESS, LimitedCallSpec, NULL_ADDRESS, utils} from "web3-wallets";
-import fetch from "node-fetch";
-import {HttpsProxyAgent} from "https-proxy-agent";
+import { Asset, ExchangeMetadata, Token, PopulatedTransaction } from "./types";
+import { checkURL, ETH_TOKEN_ADDRESS, LimitedCallSpec, NULL_ADDRESS, ethers } from "web3-wallets";
+import { HttpsProxyAgent } from "https-proxy-agent";
 
 
 export const ETHToken: Token = {
@@ -90,7 +89,7 @@ export function transactionToCallData(data: PopulatedTransaction): LimitedCallSp
 }
 
 export function isETHAddress(tokenAddress: string) {
-    if (!utils.isAddress(tokenAddress)) throw new Error("The address format is incorrect")
+    if (!ethers.isAddress(tokenAddress)) throw new Error("The address format is incorrect")
     return (tokenAddress == NULL_ADDRESS || tokenAddress.toLowerCase() == ETH_TOKEN_ADDRESS.toLowerCase())
 }
 
@@ -184,7 +183,7 @@ export async function fetchJson(url: string, options?: RequestInit & {
     timeout?: number,
     proxyUrl?: string
 }): Promise<Response> {
-    const {timeout, proxyUrl} = options || {}
+    const { timeout, proxyUrl } = options || {}
     if (!checkURL(url)) throw new Error("error url:" + url)
     if (proxyUrl && !checkURL(proxyUrl)) throw new Error("error proxyUrl:" + url)
 

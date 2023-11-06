@@ -1,3 +1,46 @@
+export const permitTypeData = {
+    "domain": {
+        "chainId": 5,
+        "verifyingContract": "0xE7b2f68C1330b28950279D9806AD13951225952E",
+        "name": "Uniswap V2",
+        "version": "1"
+    },
+    "primaryType": "Permit",
+    "message": {
+        "owner": "0x36B1a29E0bbD47dFe9dcf7380F276e86da90c4c2",
+        "spender": "0x0000000000000000000000000000000000000000",
+        "nonce": "0",
+        "value": "2",
+        "deadline": "1"
+    },
+    "types": {
+        "EIP712Domain": [],
+        "Permit": [
+            {
+                "type": "address",
+                "name": "owner"
+            },
+            {
+                "type": "address",
+                "name": "spender"
+            },
+            {
+                "type": "uint256",
+                "name": "value"
+            },
+            {
+                "type": "uint256",
+                "name": "nonce"
+            },
+            {
+                "type": "uint256",
+                "name": "deadline"
+            }
+        ],
+    }
+}
+
+
 export const zeroV41155TypedData = {
     "domain": {
         "chainId": 43114,
